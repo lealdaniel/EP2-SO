@@ -1,6 +1,18 @@
 #include "cyclist.h"
 
+
+#define MAX 10
+#define MAX_SIZE 1000
+
+
+typedef struct Lane {
+  Cyclist * spot;
+} Lane;
+
+
 typedef struct Track {
-  Cyclist cyclist[10];
+  Lane lane[10];
 
 } Track;
+
+Track track[MAX_SIZE];

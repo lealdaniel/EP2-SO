@@ -4,6 +4,7 @@ typedef struct Cyclist {
   int currentSpeed; // atual velocidade sorteada
   int actualSpeed; // velocidade efetiva
   int position;
+  int lane;
   int broke;
   int eliminated;
   
