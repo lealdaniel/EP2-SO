@@ -7,5 +7,6 @@ typedef struct Cyclist {
   int lane;
   int broke;
   int eliminated;
+  int lap;
   
 } Cyclist;
