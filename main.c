@@ -50,7 +50,7 @@ int main(int argc, char ** argv) {
         track[i].lane[j].spot->broke = 0;
         track[i].lane[j].spot->eliminated = 0;
 
-        pthread_mutex_lock(&mutex[i][j]);
+        // pthread_mutex_lock(&mutex[i][j]);
 
         num++;
       }
@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
       }
     }
     usleep(500000);
-    // printTrack(); 
+    printTrack();  
     // printf("lap: %d\n", lapGlobal);
 
   }
@@ -145,15 +145,16 @@ int main(int argc, char ** argv) {
 void * thread(void * rider) {
   Cyclist * cyclist = rider;
   int t = 0;
-  int aux, aux2;
+  int currentPosition, currentLane, desiredPosition, desiredLane;
   int cross = 0;
-  Cyclist * nextCyclist;
+  Cyclist * nextCyclist, * auxCyclist, * auxCyclist2 ;
 
   while (!cyclist->broke && !cyclist->eliminated && numCyclists > 1) {
     nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
 
     arrive[cyclist->id] = 1;
-    // printf("pareiiiiiiiiiiiiiiiiiiiiiiiiii %d\n", cyclist->id);
+
+    // printf("pareiiii %d\n", cyclist->id);
     pthread_mutex_lock(&barrier[cyclist->id]);
     // printf("midira %d\n", cyclist->id);
 
@@ -178,44 +179,57 @@ void * thread(void * rider) {
 
     // se a lane da esquerda existe e nao tem ninguem la
     if (cyclist->lane - 1 >= 0 && track[cyclist->position].lane[cyclist->lane - 1].spot == NULL) {
-      aux = cyclist->lane;
-      if (cyclist->id == 6 && cyclist->id == 0)
-        printf("travei ao esquerdarc %d\n", cyclist->id);
+      printf("travei ao esquerdar %d\n", cyclist->id);
+      pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane - 1]);
-      changePlace(cyclist, cyclist->position, cyclist->lane - 1);
-      pthread_mutex_unlock(&mutex[cyclist->position][aux]);
-      if (cyclist->id == 6 && cyclist->id == 0)
-        printf("migue %d\n", cyclist->id);
+      auxCyclist = track[cyclist->position].lane[cyclist->lane - 1].spot;
+      currentLane = cyclist->lane;
+      currentPosition = cyclist->position;
+      desiredLane = cyclist->lane-1;
+      desiredPosition = cyclist->position;
+
+      if (auxCyclist == NULL) {
+        changePlace(cyclist, cyclist->position, cyclist->lane - 1);
+      }
+      pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
+      pthread_mutex_unlock(&mutex[currentPosition][currentLane]);
+      // pthread_mutex_unlock(&mutex[cyclist->position][aux]);
+      printf("migue %d\n", cyclist->id);
       nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
     }
     
-    if (nextCyclist != NULL) {
-      if (nextCyclist->actualSpeed == 30 && cyclist->drawnSpeed == 60) {
-        int overTake = 0;
-        if (cyclist->lane + 1 < 10) { 
-          for (int i = cyclist->lane + 1; i < 10 && !overTake; i++) {
-            if (track[cyclist->position].lane[i].spot == NULL && track[(cyclist->position + 1) % distance].lane[i].spot == NULL) {
-              aux = cyclist->lane;
-              aux2 = cyclist->position;
-              if (cyclist->id == 6 && cyclist->id == 0)
-                printf("travei ao ultrapassar %d\n", cyclist->id);
-              pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][i]);
-              cyclist->actualSpeed = cyclist->drawnSpeed;
-              changePlace(cyclist, (cyclist->position + 1) % distance, i);
-              pthread_mutex_unlock(&mutex[aux2][aux]);
-              if (cyclist->id == 6 && cyclist->id == 0)
-                printf("migue %d\n", cyclist->id);
-              nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
-              overTake = 1;
-            }
-          }
-        }
+    // if (nextCyclist != NULL) {
+    //   if (nextCyclist->actualSpeed == 30 && cyclist->drawnSpeed == 60) {
+    //     int overTake = 0;
+    //     if (cyclist->lane + 1 < 10) { 
+    //       for (int i = cyclist->lane + 1; i < 10 && !overTake; i++) {
+    //         if (track[cyclist->position].lane[i].spot == NULL && track[(cyclist->position + 1) % distance].lane[i].spot == NULL) {
+    //           printf("travei ao ultrapassar %d\n", cyclist->id);
+    //           // arrive[cyclist->id] = 1;
+    //           pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][i]);
+    //           auxCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
+    //           auxCyclist2 = track[(cyclist->position + 1) % distance].lane[i].spot;
+    //           if (auxCyclist2 == NULL && auxCyclist2 == NULL) {
+    //             aux = cyclist->lane;
+    //             aux2 = cyclist->position;
+    //             cyclist->actualSpeed = cyclist->drawnSpeed;
+    //             changePlace(cyclist, (cyclist->position + 1) % distance, i);
+    //           }
+    //           pthread_mutex_unlock(&mutex[(cyclist->position + 1) % distance][i]);
+    //           // pthread_mutex_unlock(&mutex[aux2][aux]);
+    //           // arrive[cyclist->id] = 0;
+    //           printf("migue %d\n", cyclist->id);
+    //           nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
+    //           overTake = 1;
+    //         }
+    //       }
+    //     }
 
-        if (!overTake)
-          cyclist->actualSpeed = 30;
+    //     if (!overTake)
+    //       cyclist->actualSpeed = 30;
         
-      }
-    }
+    //   }
+    // }
 
     else
       cyclist->actualSpeed = cyclist->drawnSpeed;
@@ -253,14 +267,22 @@ void * thread(void * rider) {
     }
 
     if (t >= 60 && nextCyclist == NULL) {
-      aux = cyclist->position;
-      if (cyclist->id == 6 && cyclist->id == 0)
-        printf("travei ao andar %d\n", cyclist->id); 
+      printf("travei %d ao andar para  %d no lugar está : (%p)\n", cyclist->id, (cyclist->position + 1) % distance, track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot); 
+      pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
       pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][cyclist->lane]);
-      changePlace(cyclist, (cyclist->position + 1) % distance, cyclist->lane);
-      pthread_mutex_unlock(&mutex[aux][cyclist->lane]);
-      if (cyclist->id == 6 && cyclist->id == 0)
-        printf("migue %d\n", cyclist->id);
+      nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
+      currentPosition = cyclist->position;
+      currentLane = cyclist->lane;
+      desiredLane = cyclist->lane;
+      desiredPosition = (cyclist->position + 1) % distance;
+      if (nextCyclist == NULL) {
+        changePlace(cyclist, (cyclist->position + 1) % distance, cyclist->lane);
+      }
+      // pthread_mutex_unlock(&mutex[aux][cyclist->lane]);
+      pthread_mutex_unlock(&mutex[currentPosition][currentLane]);
+      pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
+      nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
+      printf("migue %d\n", cyclist->id);
       t -= 60;
     }
 
@@ -273,7 +295,7 @@ void * thread(void * rider) {
     // código para ver se o cara foi quebrou
     // if (cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
     //   if (rand() % 100 < 5) {
-    //     printf("quebrei\n");
+        // printf("quebrei\n");
     //     cyclist->broke = 1;
     //     numCyclists--;
     //     // avisar que quebrou
@@ -284,9 +306,6 @@ void * thread(void * rider) {
     //   }
     // }
   }
-
-
-
 
   pthread_cancel(pthread_self());
 
