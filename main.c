@@ -4,6 +4,7 @@
 #include "track.h"
 #include "output.h"
 #include "unistd.h"
+#include "time.h"
 
 pthread_mutex_t mutex[MAX_SIZE][MAX];
 pthread_mutex_t barrier[MAX_SIZE];
@@ -14,18 +15,23 @@ int lapGlobal = 0;
 
 void changePlace(Cyclist * cyclist, int desiredPosition, int desiredLane);
 void * thread(void * rider);
+int randomizeId(int * ids, int numCyclists);
 void printTrack();
 
 int main(int argc, char ** argv) {
   int totalCyclists = 0;
   int arrivedCyclist;
+  int lastLapGlobal;
+  int id;
+  int ids[4*MAX_SIZE] = {0};
   pthread_t tid[MAX_SIZE];
 
   if (argc < 3) {
     printf("Argumentos 'd' e 'n' faltando");
     exit(1);
   }
-
+  
+  srand(time(NULL));
   distance = atoi(argv[1]);
   numCyclists = atoi(argv[2]);
   Cyclist **cyclists = malloc(numCyclists * sizeof(Cyclist));
@@ -43,7 +49,9 @@ int main(int argc, char ** argv) {
         track[i].lane[j].spot = malloc(sizeof(Cyclist));
         cyclists[totalCyclists] = track[i].lane[j].spot;
 
-        track[i].lane[j].spot->id = totalCyclists;
+        id = randomizeId(ids, numCyclists);
+
+        track[i].lane[j].spot->id = id;
         track[i].lane[j].spot->drawnSpeed= 30;
         track[i].lane[j].spot->actualSpeed = 30;
         track[i].lane[j].spot->position = i;
@@ -57,6 +65,7 @@ int main(int argc, char ** argv) {
       else 
         track[i].lane[j].spot = NULL;
     }
+    printf("sai\n");
   }
   // o coordenador deve ver quem é o ultimo checando quem está no zero e eliminá-lo
   // if lapglobal % 2 == 0 and crossed == numcyclist -> elimina
@@ -80,7 +89,11 @@ int main(int argc, char ** argv) {
           leastLap = cyclists[i]->lap;
       }
       lapGlobal = leastLap;
-
+      if (lapGlobal != lastLapGlobal) {
+        printLaps(cyclists, totalCyclists);
+        sleep(5);  
+      }
+      
       printf("crossed %d lapglobal %d\n", crossed, lapGlobal);
     
       if (lapGlobal != 0 && lapGlobal % 2 == 0) { // && crossed >= numCyclists) {
@@ -90,7 +103,7 @@ int main(int argc, char ** argv) {
           if (track[0].lane[i].spot != NULL && track[0].lane[i].spot->lap == lapGlobal)
             count += 1;
 
-        if (count > 0){
+        if (count > 0) {
           int picked = rand() % count;
           for (int j = picked; j < 10; j++)
             if (track[0].lane[j].spot != NULL && track[0].lane[j].spot->lap == lapGlobal) {
@@ -125,7 +138,7 @@ int main(int argc, char ** argv) {
     usleep(100000);
     printTrack();  
     // printf("lap: %d\n", lapGlobal);
-
+    lastLapGlobal = lapGlobal;
   }
 
   rankCyclists(cyclists, totalCyclists);
@@ -319,7 +332,7 @@ void * thread(void * rider) {
         pthread_cancel(pthread_self());
       }
     }
-    printf("ciclista %d volta %d\n", cyclist->id, cyclist->lap);
+    // printf("ciclista %d volta %d\n", cyclist->id, cyclist->lap);
   }
   // pthread_cancel(pthread_self());
 
@@ -348,3 +361,36 @@ void printTrack() {
   printf("\n\n\n");
 
 }
+
+int randomizeId(int * ids, int numCyclists) {
+  int chose = 0;
+  int id;
+
+
+  id = rand() % numCyclists;
+
+  if (ids[id]) {
+    for (int i = id + 1; i < numCyclists && !chose; i++) {
+      if (!ids[i]) {
+        ids[i] = 1;
+        id = i;
+        chose = 1;
+      }
+    }
+
+    for (int i = 0; i < id - 1 && !chose; i++) {
+      if (!ids[i]) {
+        ids[i] = 1;
+        id = i;
+        chose = 1;
+      }
+    }
+  }
+
+  else 
+    ids[id] = 1;
+   
+  return id;
+}
+
+
