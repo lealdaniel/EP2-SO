@@ -15,7 +15,7 @@ void * thread(void * rider);
 void printTrack();
 
 int main(int argc, char ** argv) {
-  int num = 0;
+  int totalCyclists = 0;
   int lapGlobal = 0;
   int arrivedCyclist;
   pthread_t tid[MAX_SIZE];
@@ -51,7 +51,7 @@ int main(int argc, char ** argv) {
         track[i].lane[j].spot->eliminated = 0;
         track[i].lane[j].spot->lap = 0;
 
-        num++;
+        totalCyclists++;
       }
       else 
         track[i].lane[j].spot = NULL;
@@ -59,7 +59,7 @@ int main(int argc, char ** argv) {
   }
   // o coordenador deve ver quem é o ultimo checando quem está no zero e eliminá-lo
   // if lapglobal % 2 == 0 and crossed == numcyclist -> elimina
-  for(int i = 0; i < numCyclists; i++)
+  for(int i = 0; i < totalCyclists; i++)
     if (pthread_create(&tid[i], NULL, thread, cyclists[i])) {
       printf("Erro ao tentar criar as threads \n");
       exit(1);
@@ -68,13 +68,13 @@ int main(int argc, char ** argv) {
   while (numCyclists > 1) {
 
     arrivedCyclist = 1;
-    for (int i = 0; i < numCyclists && arrivedCyclist; i++) {
+    for (int i = 0; i < totalCyclists && arrivedCyclist; i++) {
       if (!arrive[i])  
         arrivedCyclist = 0;
     }
     if (arrivedCyclist) {
       int leastLap = 10e6;
-      for (int i = 0; i < numCyclists; i++) {
+      for (int i = 0; i < totalCyclists; i++) {
         if (!cyclists[i]->eliminated && !cyclists[i]->broke && cyclists[i]->lap < leastLap)
           leastLap = cyclists[i]->lap;
       }
@@ -96,7 +96,7 @@ int main(int argc, char ** argv) {
 
         int id = track[0].lane[picked].spot->id;
         printf("eliminei %d\n", track[0].lane[picked].spot->id);
-        sleep(4);
+        // sleep(4);
         track[0].lane[picked].spot->eliminated = 1;
         track[0].lane[picked].spot = NULL;
 
@@ -294,7 +294,7 @@ void * thread(void * rider) {
     if (cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
       if (rand() % 100 < 5) {
         printf("quebrei %d\n", cyclist->id);
-        sleep(2);
+        // sleep(2);
         cyclist->broke = 1;
         numCyclists--;
         // avisar que quebrou
