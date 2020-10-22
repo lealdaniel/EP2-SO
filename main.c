@@ -94,18 +94,13 @@ int main(int argc, char ** argv) {
             break;
           }
 
-        int id = track[0].lane[picked].spot->id; /// seg fault aqui as vezes
+        // int id = track[0].lane[picked].spot->id; // seg fault aqui as vezes
         printf("picked %d\n", picked);
         sleep(3);
         printf("eliminei %d\n", track[0].lane[picked].spot->id);
         // sleep(4);
         track[0].lane[picked].spot->eliminated = 1;
         track[0].lane[picked].spot = NULL;
-        // pthread_mutex_unlock(&barrier[id]);
-
-        // destroi a thread do eleminado
-
-        // pthread_cancel(tid[id]);
 
         numCyclists--;
         
@@ -127,12 +122,11 @@ int main(int argc, char ** argv) {
 
   }
 
-  printf("SAI\n\n\n");
   for (int i = 0; i < totalCyclists; i++) {
+
     pthread_mutex_unlock(&barrier[i]);
     pthread_mutex_destroy(&barrier[i]);
-    printf("to no for\n\n\n");
-    printf("%d\n", i);
+
     if (pthread_join(tid[i], NULL)) {
       printf("Erro ao juntar as threads \n");
       exit(1);
@@ -143,7 +137,6 @@ int main(int argc, char ** argv) {
 
   for (int i = 0; i < distance; i++) 
     for (int j = 0; j < 10; j++) {
-        printf("to fo nor\n\n\n");
 
       pthread_mutex_destroy(&mutex[i][j]);
     }
@@ -156,18 +149,16 @@ void * thread(void * rider) {
   int t = 0;
   int currentPosition = -1, currentLane = -1, desiredPosition = -1, desiredLane = -1, previousPosition = -1;
   int cross = 0;
-  Cyclist * nextCyclist, * auxCyclist, * auxCyclist2 ;
+  Cyclist * nextCyclist, * auxCyclist;
 
   while (numCyclists > 1 && !cyclist->broke && !cyclist->eliminated && numCyclists > 1) {
     nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
 
     arrive[cyclist->id] = 1;
 
-    printf("lockei %d\n", cyclist->id);
     pthread_mutex_lock(&barrier[cyclist->id]);
-    // printf("midira %d\n", cyclist->id);
+
     if (cyclist->lap != 0 && cyclist->lap % 2 == 0 && cross) {
-    printf("ciclita %d reportando para central (volta : %d)\n", cyclist->id, cyclist->lap);
       switch (cyclist->drawnSpeed) {
         case 30:
           if ((rand() % 100) < 80)
@@ -187,7 +178,7 @@ void * thread(void * rider) {
     }
 
     // se a lane da esquerda existe e nao tem ninguem la
-    if (/*cyclist->lap >= 2 &&*/ cyclist->lane - 1 >= 0 && track[cyclist->position].lane[cyclist->lane - 1].spot == NULL) {
+    if (cyclist->lap >= 2 && cyclist->lane - 1 >= 0 && track[cyclist->position].lane[cyclist->lane - 1].spot == NULL) {
       // printf("travei ao esquerdar %d\n", cyclist->id);
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane - 1]);
@@ -275,21 +266,25 @@ void * thread(void * rider) {
     }
 
     if (t >= 60 && nextCyclist == NULL) {
-      // printf("travei %d ao andar para  %d no lugar está : (%p)\n", cyclist->id, (cyclist->position + 1) % distance, track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot); 
+
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
       pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][cyclist->lane]);
+
       nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
       currentPosition = cyclist->position;
       currentLane = cyclist->lane;
       desiredLane = cyclist->lane;
       desiredPosition = (cyclist->position + 1) % distance;
+
       if (nextCyclist == NULL) {
         previousPosition = currentPosition;
         changePlace(cyclist, (cyclist->position + 1) % distance, cyclist->lane);
         t -= 60;
       }
+
       pthread_mutex_unlock(&mutex[currentPosition][currentLane]);
       pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
+
       nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
       // printf("migue %d\n", cyclist->id);
     }
@@ -303,9 +298,9 @@ void * thread(void * rider) {
 
     // código para ver se o cara foi quebrou
     if (cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
-      if (rand() % 100 < 100) {
+      if (rand() % 100 < 5) {
         printf("quebrei %d\n", cyclist->id);
-        // sleep(3);
+        sleep(3);
         cyclist->broke = 1;
         numCyclists--;
         // avisar que quebrou
