@@ -9,6 +9,7 @@ pthread_mutex_t barrier[MAX_SIZE];
 int arrive[MAX_SIZE] = { 0 };
 int distance, numCyclists;
 int crossed = 0;
+int lapGlobal = 0;
 
 void changePlace(Cyclist * cyclist, int desiredPosition, int desiredLane);
 void * thread(void * rider);
@@ -16,7 +17,6 @@ void printTrack();
 
 int main(int argc, char ** argv) {
   int totalCyclists = 0;
-  int lapGlobal = 0;
   int arrivedCyclist;
   pthread_t tid[MAX_SIZE];
 
@@ -79,32 +79,37 @@ int main(int argc, char ** argv) {
           leastLap = cyclists[i]->lap;
       }
       lapGlobal = leastLap;
+
+      printf("crossed %d lapglobal %d\n", crossed, lapGlobal);
     
-      if (lapGlobal != 0 && lapGlobal % 2 == 0 && crossed >= numCyclists) {
+      if (lapGlobal != 0 && lapGlobal % 2 == 0) { // && crossed >= numCyclists) {
 
         int count = 0;
         for (int i = 0 ; i < 10; i++)
-          if (track[0].lane[i].spot != NULL)
+          if (track[0].lane[i].spot != NULL && track[0].lane[i].spot->lap == lapGlobal)
             count += 1;
 
-        int picked = rand() % count;
-        for (int j = picked; j < 10; j++)
-          if (track[0].lane[j].spot != NULL && track[0].lane[j].spot->lap == lapGlobal) {
-            picked = j;
-            break;
-          }
+        if (count > 0){
+          int picked = rand() % count;
+          for (int j = picked; j < 10; j++)
+            if (track[0].lane[j].spot != NULL && track[0].lane[j].spot->lap == lapGlobal) {
+              picked = j;
+              printf("id %d\n", track[0].lane[j].spot->id);
+              break;
+            }
 
-        // int id = track[0].lane[picked].spot->id; // seg fault aqui as vezes
-        printf("picked %d\n", picked);
-        sleep(3);
-        printf("eliminei %d\n", track[0].lane[picked].spot->id);
-        // sleep(4);
-        track[0].lane[picked].spot->eliminated = 1;
-        track[0].lane[picked].spot = NULL;
+          // int id = track[0].lane[picked].spot->id; // seg fault aqui as vezes
+          printf("picked %d\n", picked);
+          sleep(10);
+          printf("eliminei %d\n", track[0].lane[picked].spot->id);
+          // sleep(4);
+          track[0].lane[picked].spot->eliminated = 1;
+          track[0].lane[picked].spot = NULL;
 
-        numCyclists--;
-        
-        crossed = 0;
+          numCyclists--;
+          
+          // crossed = 0;
+        }
 
       }
       
@@ -291,8 +296,9 @@ void * thread(void * rider) {
 
     if (previousPosition == distance - 1 && cyclist->position == 0) {
       previousPosition = 0;
+      // if (cyclist->lap == lapGlobal)
+      //   crossed += 1;
       cyclist->lap += 1;
-      crossed += 1;
       cross = 1;
     }
 
@@ -300,7 +306,7 @@ void * thread(void * rider) {
     if (cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
       if (rand() % 100 < 5) {
         printf("quebrei %d\n", cyclist->id);
-        sleep(3);
+        // sleep(3);
         cyclist->broke = 1;
         numCyclists--;
         // avisar que quebrou
