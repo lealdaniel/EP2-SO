@@ -36,13 +36,13 @@ int main(int argc, char ** argv) {
     for (int j = 0; j < 10; j++) {
       pthread_mutex_init(&mutex[i][j], NULL);
 
-      if (num < numCyclists && i < distance && j < 5) {
-        pthread_mutex_init(&barrier[num], NULL);
+      if (totalCyclists < numCyclists && i < distance && j < 5) {
+        pthread_mutex_init(&barrier[totalCyclists], NULL);
 
         track[i].lane[j].spot = malloc(sizeof(Cyclist));
-        cyclists[num] = track[i].lane[j].spot;
+        cyclists[totalCyclists] = track[i].lane[j].spot;
 
-        track[i].lane[j].spot->id = num;
+        track[i].lane[j].spot->id = totalCyclists;
         track[i].lane[j].spot->drawnSpeed= 30;
         track[i].lane[j].spot->actualSpeed = 30;
         track[i].lane[j].spot->position = i;
@@ -86,7 +86,6 @@ int main(int argc, char ** argv) {
         for (int i = 0 ; i < 10; i++)
           if (track[0].lane[i].spot != NULL)
             count += 1;
-        // O COUNT TA ZERO AINDA CARAI
         int picked = rand() % count;
         for (int j = picked; j < 10; j++)
           if (track[0].lane[j].spot != NULL && track[0].lane[j].spot->lap == lapGlobal) {
@@ -111,7 +110,7 @@ int main(int argc, char ** argv) {
       }
       
       printf("liberando da barreira volta %d\n", lapGlobal);
-      for (int i = 0; i < num; i++) {
+      for (int i = 0; i < totalCyclists; i++) {
         if (!cyclists[i]->eliminated && !cyclists[i]->broke){
           arrive[i] = 0;
           pthread_mutex_unlock(&barrier[i]);
@@ -125,7 +124,7 @@ int main(int argc, char ** argv) {
   }
 
 
-  for (int i = 0; i < numCyclists; i++) {
+  for (int i = 0; i < totalCyclists; i++) {
     pthread_mutex_destroy(&barrier[i]);
     if (pthread_join(tid[i], NULL)) {
       printf("Erro ao juntar as threads \n");
@@ -147,7 +146,7 @@ void * thread(void * rider) {
   int cross = 0;
   Cyclist * nextCyclist, * auxCyclist, * auxCyclist2 ;
 
-  while (!cyclist->broke && !cyclist->eliminated && numCyclists > 1) {
+  while (numCyclists > 1 && !cyclist->broke && !cyclist->eliminated && numCyclists > 1) {
     nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
 
     arrive[cyclist->id] = 1;
@@ -305,7 +304,7 @@ void * thread(void * rider) {
       }
     }
   }
-  pthread_cancel(pthread_self());
+  // pthread_cancel(pthread_self());
 
   return NULL;
 }
