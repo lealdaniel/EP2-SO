@@ -1,3 +1,6 @@
+#ifndef CYCLIST_H
+#define CYCLIST_H
+
 typedef struct Cyclist {
   int id;
   int drawnSpeed; // atual velocidade sorteada
@@ -9,3 +12,5 @@ typedef struct Cyclist {
   int lap;
   
 } Cyclist;
+
+#endif

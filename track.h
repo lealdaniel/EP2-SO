@@ -1,5 +1,7 @@
-#include "cyclist.h"
+#ifndef TRACK_H
+#define TRACK_H
 
+#include "cyclist.h"
 
 #define MAX 10
 #define MAX_SIZE 1000
@@ -16,3 +18,5 @@ typedef struct Track {
 } Track;
 
 Track track[MAX_SIZE];
+
+#endif

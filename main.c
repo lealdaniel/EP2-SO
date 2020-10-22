@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "track.h"
+#include "output.h"
 #include "unistd.h"
 
 pthread_mutex_t mutex[MAX_SIZE][MAX];
@@ -126,6 +127,8 @@ int main(int argc, char ** argv) {
     // printf("lap: %d\n", lapGlobal);
 
   }
+
+  rankCyclists(cyclists, totalCyclists);
 
   for (int i = 0; i < totalCyclists; i++) {
 
