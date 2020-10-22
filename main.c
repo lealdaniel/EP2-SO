@@ -86,6 +86,7 @@ int main(int argc, char ** argv) {
         for (int i = 0 ; i < 10; i++)
           if (track[0].lane[i].spot != NULL)
             count += 1;
+
         int picked = rand() % count;
         for (int j = picked; j < 10; j++)
           if (track[0].lane[j].spot != NULL && track[0].lane[j].spot->lap == lapGlobal) {
@@ -93,15 +94,18 @@ int main(int argc, char ** argv) {
             break;
           }
 
-        int id = track[0].lane[picked].spot->id;
+        int id = track[0].lane[picked].spot->id; /// seg fault aqui as vezes
+        printf("picked %d\n", picked);
+        sleep(3);
         printf("eliminei %d\n", track[0].lane[picked].spot->id);
         // sleep(4);
         track[0].lane[picked].spot->eliminated = 1;
         track[0].lane[picked].spot = NULL;
+        // pthread_mutex_unlock(&barrier[id]);
 
         // destroi a thread do eleminado
 
-        pthread_cancel(tid[id]);
+        // pthread_cancel(tid[id]);
 
         numCyclists--;
         
@@ -123,18 +127,26 @@ int main(int argc, char ** argv) {
 
   }
 
-
+  printf("SAI\n\n\n");
   for (int i = 0; i < totalCyclists; i++) {
+    pthread_mutex_unlock(&barrier[i]);
     pthread_mutex_destroy(&barrier[i]);
+    printf("to no for\n\n\n");
+    printf("%d\n", i);
     if (pthread_join(tid[i], NULL)) {
       printf("Erro ao juntar as threads \n");
       exit(1);
     }
+    free(cyclists[i]);
   }
+  free(cyclists);
 
   for (int i = 0; i < distance; i++) 
-    for (int j = 0; j < 10; j++) 
+    for (int j = 0; j < 10; j++) {
+        printf("to fo nor\n\n\n");
+
       pthread_mutex_destroy(&mutex[i][j]);
+    }
 
   return 0;
 }
@@ -142,7 +154,7 @@ int main(int argc, char ** argv) {
 void * thread(void * rider) {
   Cyclist * cyclist = rider;
   int t = 0;
-  int currentPosition, currentLane, desiredPosition, desiredLane, previousPosition;
+  int currentPosition = -1, currentLane = -1, desiredPosition = -1, desiredLane = -1, previousPosition = -1;
   int cross = 0;
   Cyclist * nextCyclist, * auxCyclist, * auxCyclist2 ;
 
@@ -151,7 +163,7 @@ void * thread(void * rider) {
 
     arrive[cyclist->id] = 1;
 
-    // printf("pareiiii %d\n", cyclist->id);
+    printf("lockei %d\n", cyclist->id);
     pthread_mutex_lock(&barrier[cyclist->id]);
     // printf("midira %d\n", cyclist->id);
     if (cyclist->lap != 0 && cyclist->lap % 2 == 0 && cross) {
@@ -175,7 +187,7 @@ void * thread(void * rider) {
     }
 
     // se a lane da esquerda existe e nao tem ninguem la
-    if (cyclist->lap >= 2 && cyclist->lane - 1 >= 0 && track[cyclist->position].lane[cyclist->lane - 1].spot == NULL) {
+    if (/*cyclist->lap >= 2 &&*/ cyclist->lane - 1 >= 0 && track[cyclist->position].lane[cyclist->lane - 1].spot == NULL) {
       // printf("travei ao esquerdar %d\n", cyclist->id);
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane - 1]);
@@ -291,18 +303,19 @@ void * thread(void * rider) {
 
     // código para ver se o cara foi quebrou
     if (cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
-      if (rand() % 100 < 5) {
+      if (rand() % 100 < 100) {
         printf("quebrei %d\n", cyclist->id);
-        // sleep(2);
+        // sleep(3);
         cyclist->broke = 1;
         numCyclists--;
         // avisar que quebrou
         track[cyclist->position].lane[cyclist->lane].spot = NULL;
         arrive[cyclist->id] = 1;
-        free(cyclist);
+        // free(cyclist);
         pthread_cancel(pthread_self());
       }
     }
+    printf("ciclista %d volta %d\n", cyclist->id, cyclist->lap);
   }
   // pthread_cancel(pthread_self());
 
