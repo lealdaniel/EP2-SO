@@ -1,6 +1,6 @@
 #include "output.h"
 
-void printLaps(Cyclist ** cyclists, int numCyclists) {
+void outputLaps(Cyclist ** cyclists, int numCyclists) {
   for (int i = 0; i < numCyclists; i++) {
     if (!cyclists[i]->eliminated && !cyclists[i]->broke)
       printf("Ciclista%d está na volta %d, na posição %d\n", cyclists[i]->id, cyclists[i]->lap, cyclists[i]->position);

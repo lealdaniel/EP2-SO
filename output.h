@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "cyclist.h"
 
-void printLaps(Cyclist ** cyclists, int numCyclists);
+void outputLaps(Cyclist ** cyclists, int numCyclists);
 void rankCyclists(Cyclist ** cyclists, int numCyclists);
 
 #endif

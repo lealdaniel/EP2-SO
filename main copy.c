@@ -27,7 +27,6 @@ int main(int argc, char ** argv) {
   int id;
   int ids[4*MAX_SIZE] = {0};
   int eliminated = 0;
-  int mod2 = 2;
   pthread_t tid[MAX_SIZE];
 
   if (argc < 3) {
@@ -89,24 +88,29 @@ int main(int argc, char ** argv) {
       if (!arrive[i])  
         arrivedCyclist = 0;
     }
-
     if (arrivedCyclist) {
-      if (checkLapped(totalCyclists, lapGlobal + 1)) {
-        eliminated = 0;
-        lapGlobal += 1;
+      int leastLap = 10e6;
+      for (int i = 0; i < totalCyclists; i++) {
+        if (!cyclists[i]->eliminated && !cyclists[i]->broke && cyclists[i]->lap < leastLap)
+          leastLap = cyclists[i]->lap;
       }
-
-    
+      lapGlobal = leastLap;
+      if (lapGlobal != lastLapGlobal) {
+        outputLaps(cyclists, totalCyclists);
+        sleep(5);
+        eliminated = 0;
+      }
+      
       printf("crossed %d lapglobal %d\n", crossed, lapGlobal);
     
-      if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
+      if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) { // && crossed >= numCyclists) {
 
-        int count = 0;
-        for (int i = 0 ; i < 10; i++)
-          if (track[0].lane[i].spot != NULL && track[0].lane[i].spot->lap == lapGlobal)
-            count += 1;
+        // int count = 0;
+        // for (int i = 0 ; i < 10; i++)
+        //   if (track[0].lane[i].spot != NULL && track[0].lane[i].spot->lap == lapGlobal)
+        //     count += 1;
 
-        if (count > 1) {
+        if (count > 0) {
           int picked = rand() % count;
           for (int j = picked; j < 10; j++)
             if (track[0].lane[j].spot != NULL && track[0].lane[j].spot->lap == lapGlobal) {
@@ -128,8 +132,6 @@ int main(int argc, char ** argv) {
           
           // crossed = 0;
         }
-
-        
 
       }
       
