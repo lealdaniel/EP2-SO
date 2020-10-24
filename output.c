@@ -51,4 +51,7 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
   for (int i = 0; i < numBroke; i++) {
     printf("O ciclista%d quebrou na volta %d\n", broke[i]->id, broke[i]->lap);
   }
+
+  free(broke);
+  free(notBroke);
 }
