@@ -1,4 +1,7 @@
 #include "list.h"
+// #include "cyclist.h"
+// #include <stdlib.h>
+// #include <stdio.h>
 
 void initLaps(int numCyclists) {
   laps = (List**) malloc(2 * numCyclists * sizeof(List*));
@@ -17,14 +20,16 @@ void addCyclistToLap(int id, int lap) {
   aux->next = NULL;
   laps[lap]->numLapped += 1;
 
-  if (laps[lap]->first == NULL) {
+  if (laps[lap]->first == NULL) {    
     laps[lap]->first = aux;
     laps[lap]->last = aux;
   }
 
   else {
-    laps[lap]->last->next = aux;
+    aux->next = laps[lap]->last;
     laps[lap]->last = aux;
+  //   laps[lap]->last->next = aux;
+  //   laps[lap]->last = aux;
   }
 }
 
@@ -42,7 +47,7 @@ void freeLaps(int numCyclists) {
     while (aux != NULL) {
       laps[i]->first = aux->next;
       free(aux);
-      aux = laps[i]->first;
+      aux = laps[i]->last;
     }
     free(laps[i]);
   }
@@ -54,11 +59,30 @@ void printLaps(int numCyclists) {
   Node * aux;
   
   for (int i = 0; i < 2*numCyclists; i++) {
-    aux = laps[i]->first;
+    aux = laps[i]->last;
     printf("volta: %d\n", i+1);
     while (aux != NULL) {
       printf("id: %d\n", aux->id);
       aux = aux->next;
     }
   }
+}
+
+int eliminateLast(int lap, Cyclist ** cyclists) {
+  int count = 0;
+  Node * aux = laps[lap]->last;
+  while(aux->next != NULL && cyclists[aux->id]->lastLapTime == cyclists[aux->next->id]->lastLapTime) {
+    count++;
+    aux = aux->next;
+  }
+  if (count > 0) {
+    int picked = rand() % count;
+    aux = laps[lap]->last;
+    for (int i = 0; i < count; i++)
+      aux = aux->next;
+    return aux->id;
+  }
+
+  return laps[lap]->last->id;
+
 }

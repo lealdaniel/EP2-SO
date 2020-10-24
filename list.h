@@ -3,6 +3,7 @@
 
 #include "stdlib.h"
 #include "stdio.h"
+#include "cyclist.h"
 
 typedef struct Node {
   int id;
@@ -21,7 +22,8 @@ void initLaps(int numCyclists);
 void addCyclistToLap(int id, int lap);
 void freeLaps(int numCyclists);
 int checkLapped(int numCyclists, int lap);
-void printLaps(int numCyclists, int lap);
+void printLaps(int numCyclists);
+int eliminateLast(int lap, Cyclist ** cyclists);
 
 
 #endif
