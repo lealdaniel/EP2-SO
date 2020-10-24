@@ -9,6 +9,7 @@
 
 pthread_mutex_t mutex[MAX_SIZE][MAX];
 pthread_mutex_t lap;
+pthread_mutex_t timeMutex;
 pthread_mutex_t barrier[MAX_SIZE];
 int arrive[MAX_SIZE] = { 0 };
 int distance, numCyclists;
@@ -43,6 +44,7 @@ int main(int argc, char ** argv) {
   Cyclist **cyclists = malloc(numCyclists * sizeof(Cyclist));
   initLaps(numCyclists);
   pthread_mutex_init(&lap, NULL);
+  pthread_mutex_init(&timeMutex, NULL);
 
 
   for (int i = 0; i < distance; i++) {
@@ -115,10 +117,14 @@ int main(int argc, char ** argv) {
       usleep(100000);
       printTrack();
     }  
+
+    pthread_mutex_lock(&timeMutex);
     if (numCyclists > 2)
       timePast += 60;
     else    
       timePast += 20;
+    pthread_mutex_unlock(&timeMutex);
+
     
   }
 
@@ -133,10 +139,13 @@ int main(int argc, char ** argv) {
       printf("Erro ao juntar as threads \n");
       exit(1);
     }
+  }
+
+  for (int i = 0; i < totalCyclists; i++) {
     free(cyclists[i]);
   }
   free(cyclists);
-
+  freeLaps(totalCyclists);
   for (int i = 0; i < distance; i++) 
     for (int j = 0; j < 10; j++) {
 
@@ -151,13 +160,10 @@ void * thread(void * rider) {
   int t = 0;
   int currentPosition = -1, currentLane = -1, desiredPosition = -1, desiredLane = -1, previousPosition = -1;
   int cross = 0;
-  Cyclist * nextCyclist, * auxCyclist;
+  Cyclist * auxCyclist;
 
   while (numCyclists > 1 && !cyclist->broke && !cyclist->eliminated) {
-    nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
-
     arrive[cyclist->id] = 1;
-
     pthread_mutex_lock(&barrier[cyclist->id]);
 
     if (cyclist->lap != 0 && cyclist->lap % 2 == 0 && cross) {
@@ -193,33 +199,35 @@ void * thread(void * rider) {
       }
       pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
       pthread_mutex_unlock(&mutex[currentPosition][currentLane]);
-      nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
     }
-    
-    printf("1: %p\n", nextCyclist);
-    if (nextCyclist != NULL) {
-      printf("2: %p\n", nextCyclist);
-      if (nextCyclist->actualSpeed == 30 && cyclist->drawnSpeed == 60) {
+
+    pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][cyclist->lane]);   
+    int lockedPos = (cyclist->position + 1) % distance; 
+    int lockedLane = cyclist->lane;
+    if (track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot != NULL) {
+      if (track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot->actualSpeed == 30 && cyclist->drawnSpeed == 60) {
         int overTake = 0;
         if (cyclist->lane + 1 < 10) { 
           for (int i = cyclist->lane + 1; i < 10 && !overTake; i++) {
+            pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][i]);
+            pthread_mutex_lock(&mutex[cyclist->position][i]);
+            currentLane = cyclist->lane;
+            currentPosition = cyclist->position;
+            desiredPosition = (cyclist->position + 1) % distance;
+            desiredLane = i;
+          
             if (track[cyclist->position].lane[i].spot == NULL && track[(cyclist->position + 1) % distance].lane[i].spot == NULL) {
-              pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][i]);
               pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
               auxCyclist = track[(cyclist->position + 1) % distance].lane[i].spot;
-              currentLane = cyclist->lane;
-              currentPosition = cyclist->position;
-              desiredPosition = (cyclist->position + 1) % distance;
-              desiredLane = i;
               if (auxCyclist == NULL) {
                 cyclist->actualSpeed = cyclist->drawnSpeed;
                 changePlace(cyclist, (cyclist->position + 1) % distance, i);
               }
               pthread_mutex_unlock(&mutex[currentPosition][currentLane]);
-              pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
-              nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
               overTake = 1;
             }
+            pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
+            pthread_mutex_unlock(&mutex[currentPosition][i]);
           }
         }
 
@@ -232,7 +240,8 @@ void * thread(void * rider) {
     else
       cyclist->actualSpeed = cyclist->drawnSpeed;
 
-    
+    pthread_mutex_unlock(&mutex[lockedPos][lockedLane]);    
+
     if (numCyclists > 2) {
       switch (cyclist->actualSpeed) {
         case 60:
@@ -264,18 +273,17 @@ void * thread(void * rider) {
       }
     }
 
-    if (t >= 60 && nextCyclist == NULL) {
+    if (t >= 60 && track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot == NULL) {
 
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
       pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][cyclist->lane]);
 
-      nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
       currentPosition = cyclist->position;
       currentLane = cyclist->lane;
       desiredLane = cyclist->lane;
       desiredPosition = (cyclist->position + 1) % distance;
 
-      if (nextCyclist == NULL) {
+      if (track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot == NULL) {
         previousPosition = currentPosition;
         changePlace(cyclist, (cyclist->position + 1) % distance, cyclist->lane);
         t -= 60;
@@ -284,12 +292,13 @@ void * thread(void * rider) {
       pthread_mutex_unlock(&mutex[currentPosition][currentLane]);
       pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
 
-      nextCyclist = track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot;
     }
 
     if (previousPosition == distance - 1 && cyclist->position == 0) {
       previousPosition = 0;
+      pthread_mutex_lock(&timeMutex);
       cyclist->lastLapTime = timePast;
+      pthread_mutex_unlock(&timeMutex);
       cyclist->lap += 1;
       pthread_mutex_lock(&lap);
       addCyclistToLap(cyclist->id, cyclist->lap);
@@ -297,7 +306,6 @@ void * thread(void * rider) {
       cross = 1;
     }
 
-    // código para ver se o cara foi quebrou
     if (cyclist->position == 0 && cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
       if (rand() % 100 < 5) {
         pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);

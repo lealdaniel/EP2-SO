@@ -39,9 +39,9 @@ int checkLapped(int numCyclists, int lap) {
 void freeLaps(int numCyclists) {
   Node * aux;
   for (int i = 1; i < (2 * numCyclists + 1); i++) {
-    aux = laps[i]->first;
+    aux = laps[i]->last;
     while (aux != NULL) {
-      laps[i]->first = aux->next;
+      laps[i]->last = aux->next;
       free(aux);
       aux = laps[i]->last;
     }
