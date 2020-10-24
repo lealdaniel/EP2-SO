@@ -1,14 +1,15 @@
 
 
 ep2: main.o output.o list.o
-	gcc -g -Wall -o ep2 main.o list.o output.o -lpthread
+	gcc -g -Wall main.o list.o output.o -o ep2 -lpthread
 
-main.o: main.c output.o list.o
-	gcc -g -Wall -c main.c output.h list.h -lpthread
+main.o: main.c 
+	gcc -g -Wall -c main.c -lpthread
 
 output.o: output.c output.h
-	gcc -g -Wall -c output.c output.h
+	gcc -g -Wall -c output.c
 
-list.o: list.c list.h
-	gcc -g -Wall -c list.c list.h
-
+list.o: list.h list.c
+	gcc -g -Wall -c list.c
+clean:
+	rm *.o

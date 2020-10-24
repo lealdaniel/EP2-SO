@@ -1,10 +1,7 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include "stdlib.h"
-#include "stdio.h"
 #include "cyclist.h"
-#include "time.h"
 
 typedef struct Node {
   int id;
@@ -17,14 +14,12 @@ typedef struct List {
   Node * last;
 } List;
 
-List ** laps;
-
-void initLaps(int numCyclists);
-void addCyclistToLap(int id, int lap);
-void freeLaps(int numCyclists);
-int checkLapped(int numCyclists, int lap);
-void printLaps(int numCyclists);
-int eliminateLast(int lap, Cyclist ** cyclists);
+List ** initLaps(List ** laps, int numCyclists);
+void addCyclistToLap(List ** laps, int id, int lap);
+void freeLaps(List ** laps, int numCyclists);
+int checkLapped(List ** laps, int numCyclists, int lap);
+void printLaps(List ** laps, int numCyclists);
+int eliminateLast(List ** laps, int lap, Cyclist ** cyclists);
 
 
 #endif

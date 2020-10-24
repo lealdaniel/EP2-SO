@@ -1,6 +1,8 @@
 #include "list.h"
-
-void initLaps(int numCyclists) {
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+List ** initLaps(List ** laps, int numCyclists) {
   laps = (List**) malloc((2 * numCyclists + 1) * sizeof(List*));
   
   for (int i = 1; i < 2 * numCyclists + 1; i++) {
@@ -9,14 +11,17 @@ void initLaps(int numCyclists) {
     laps[i]->last = NULL;
     laps[i]->numLapped = 0;
   }
+  return laps;
 }
 
-void addCyclistToLap(int id, int lap) {
+void addCyclistToLap(List ** laps, int id, int lap) {
+
   Node * aux = malloc(sizeof(Node));
+  // printf("%d\n", lap);  
   aux->id = id;
   aux->next = NULL;
+  printf("%d\n", lap);
   laps[lap]->numLapped += 1;
-
   if (laps[lap]->first == NULL) {    
     laps[lap]->first = aux;
     laps[lap]->last = aux;
@@ -28,7 +33,8 @@ void addCyclistToLap(int id, int lap) {
   }
 }
 
-int checkLapped(int numCyclists, int lap) {
+int checkLapped(List ** laps, int numCyclists, int lap) {
+  printf("%p\n", laps);
   if (laps[lap]->numLapped == numCyclists) {
     return 1;
   }
@@ -36,7 +42,7 @@ int checkLapped(int numCyclists, int lap) {
   return 0;
 }
 
-void freeLaps(int numCyclists) {
+void freeLaps(List ** laps, int numCyclists) {
   Node * aux;
   for (int i = 1; i < (2 * numCyclists + 1); i++) {
     aux = laps[i]->last;
@@ -51,7 +57,7 @@ void freeLaps(int numCyclists) {
   free(laps);
 }
 
-void printLaps(int numCyclists) {
+void printLaps(List ** laps, int numCyclists) {
   Node * aux;
   
   for (int i = 1; i < (2 * numCyclists + 1); i++) {
@@ -64,7 +70,7 @@ void printLaps(int numCyclists) {
   }
 }
 
-int eliminateLast(int lap, Cyclist ** cyclists) {
+int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
   int count = 0;
   Node * aux = laps[lap]->last;
   int lastTime = cyclists[aux->id]->lastLapTime;
