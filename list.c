@@ -33,7 +33,7 @@ void addCyclistToLap(List ** laps, int id, int lap) {
 }
 
 int checkLapped(List ** laps, int numCyclists, int lap) {
-  if (laps[lap]->numLapped == numCyclists) {
+  if (laps[lap]->numLapped >= numCyclists) {
     return 1;
   }
     
