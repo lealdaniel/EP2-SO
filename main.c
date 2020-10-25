@@ -91,10 +91,11 @@ int main(int argc, char ** argv) {
 
     arrivedCyclist = 1;
     for (int i = 0; i < totalCyclists && arrivedCyclist; i++) {
-      if (!arrive[i])  {
+      if (!arrive[i] && !cyclists[i]->eliminated && !cyclists[i]->broke)  {
         arrivedCyclist = 0;
       }
     }
+    printf("\n");
 
     if (arrivedCyclist) {
       if (checkLapped(laps, numCyclists, lapGlobal + 1)) {
@@ -122,6 +123,7 @@ int main(int argc, char ** argv) {
 
       if (debug) {
         printTrack();
+        // printLaps(laps, totalCyclists);
       }  
       
       for (int i = 0; i < totalCyclists; i++) {
@@ -207,6 +209,7 @@ void * thread(void * rider) {
       }
       cross = 0;
     }
+
     if (cyclist->lane - 1 >= 0) {
       pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane - 1]);
       currentLane = cyclist->lane;
@@ -327,7 +330,7 @@ void * thread(void * rider) {
       cyclist->lastLapTime = timePast;
       pthread_mutex_unlock(&timeMutex);
 
-      if (cyclist->lap <= 2*totalCyclists+1) {
+      if (cyclist->lap <= 2*totalCyclists) {
         pthread_mutex_lock(&lap);
         addCyclistToLap(laps, cyclist->id, cyclist->lap);
         pthread_mutex_unlock(&lap);

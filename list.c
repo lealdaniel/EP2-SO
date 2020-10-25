@@ -14,9 +14,11 @@ List ** initLaps(List ** laps, int numCyclists) {
 }
 
 void addCyclistToLap(List ** laps, int id, int lap) {
+  
   Node * aux = malloc(sizeof(Node));
   aux->id = id;
   aux->next = NULL;
+  printf("%d\n", lap);
   laps[lap]->numLapped += 1;
 
   if (laps[lap]->first == NULL) {    
