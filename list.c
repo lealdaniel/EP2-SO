@@ -1,7 +1,6 @@
 #include "list.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+
+
 List ** initLaps(List ** laps, int numCyclists) {
   laps = (List**) malloc((2 * numCyclists + 1) * sizeof(List*));
   
@@ -15,13 +14,11 @@ List ** initLaps(List ** laps, int numCyclists) {
 }
 
 void addCyclistToLap(List ** laps, int id, int lap) {
-
   Node * aux = malloc(sizeof(Node));
-  // printf("%d\n", lap);  
   aux->id = id;
   aux->next = NULL;
-  printf("%d\n", lap);
   laps[lap]->numLapped += 1;
+
   if (laps[lap]->first == NULL) {    
     laps[lap]->first = aux;
     laps[lap]->last = aux;
@@ -34,7 +31,6 @@ void addCyclistToLap(List ** laps, int id, int lap) {
 }
 
 int checkLapped(List ** laps, int numCyclists, int lap) {
-  printf("%p\n", laps);
   if (laps[lap]->numLapped == numCyclists) {
     return 1;
   }
@@ -72,25 +68,42 @@ void printLaps(List ** laps, int numCyclists) {
 
 int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
   int count = 0;
+  int valid = 0;
+  int lastTime;
   Node * aux = laps[lap]->last;
-  int lastTime = cyclists[aux->id]->lastLapTime;
+  Node * aux2;
 
-  srand(time(NULL));
-
-  while(aux != NULL && cyclists[aux->id]->lastLapTime == lastTime) {
-    count++;
+  while (aux != NULL && cyclists[aux->id]->broke) {
     aux = aux->next;
   }
 
-  if (count > 0) {
-    int picked = rand() % count;
-    aux = laps[lap]->last;
-    for (int i = 1; i < picked; i++)
-      aux = aux->next;
+  if (aux == NULL)
+    return -1;
 
-    return aux->id;
+  lastTime = cyclists[aux->id]->lastLapTime;
+
+  srand(time(NULL));
+
+  aux2 = aux;
+  while(aux2 != NULL && cyclists[aux2->id]->lastLapTime == lastTime) {
+    count++;
+    aux2 = aux2->next;
   }
 
-  return laps[lap]->last->id;
+  if (count > 1) {
+    while (!valid) {
+      int picked = rand() % count;
+      aux2 = aux;
+      for (int i = 0; i < picked; i++)
+        aux2 = aux2->next;
+
+      if (!cyclists[aux->id]->broke)
+        valid = 1;
+    }
+
+    return aux2->id;
+  }
+
+  return aux->id;
 
 }

@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <pthread.h>
 #include "track.h"
 #include "output.h"
 #include "unistd.h"
-#include "time.h"
 #include "list.h"
 
 pthread_mutex_t mutex[MAX_SIZE][MAX];
@@ -61,7 +58,6 @@ int main(int argc, char ** argv) {
         id = randomizeId(ids, numCyclists);
         cyclists[id] = track[i].lane[j].spot;
 
-        printf("%p\n", cyclists[id]);
         track[i].lane[j].spot->id = id;
         track[i].lane[j].spot->drawnSpeed= 30;
         track[i].lane[j].spot->actualSpeed = 30;
@@ -73,13 +69,12 @@ int main(int argc, char ** argv) {
         track[i].lane[j].spot->lap = 0;
 
         totalCyclists++;
-        printf("%d\n",id);
       }
       else 
         track[i].lane[j].spot = NULL;
     }
   }
-  // return 0;
+
   for(int i = 0; i < totalCyclists; i++)
     if (pthread_create(&tid[i], NULL, thread, cyclists[i])) {
       printf("Erro ao tentar criar as threads \n");
@@ -96,8 +91,9 @@ int main(int argc, char ** argv) {
 
     arrivedCyclist = 1;
     for (int i = 0; i < totalCyclists && arrivedCyclist; i++) {
-      if (!arrive[i])  
+      if (!arrive[i])  {
         arrivedCyclist = 0;
+      }
     }
 
     if (arrivedCyclist) {
@@ -106,14 +102,27 @@ int main(int argc, char ** argv) {
         lapGlobal += 1;
       }
     
+      printf("lapglobal: %d\n", lapGlobal);
+      // usleep(10000);
     
       if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
         int picked = eliminateLast(laps, lapGlobal, cyclists);
-        cyclists[picked]->eliminated = 1;
-        track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
-        eliminated = 1;
-        numCyclists--;
+        if (picked != -1) {
+          printTrack();
+          printf("PICKED CARALHO: %d\n", picked);
+          cyclists[picked]->eliminated = 1;
+          printf("lap: %d, lapGlobal: %d\n", cyclists[picked]->lap, lapGlobal);
+          track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
+          printTrack();
+
+          eliminated = 1;
+          numCyclists--;
+        }
       }
+
+      if (debug) {
+        printTrack();
+      }  
       
       for (int i = 0; i < totalCyclists; i++) {
         if (!cyclists[i]->eliminated && !cyclists[i]->broke) {
@@ -121,11 +130,9 @@ int main(int argc, char ** argv) {
           pthread_mutex_unlock(&barrier[cyclists[i]->id]);
         }
       }
+
+
     }
-    if (debug) {
-      // usleep(100000);
-      printTrack();
-    }  
 
     pthread_mutex_lock(&timeMutex);
     if (numCyclists > 2)
@@ -171,7 +178,6 @@ void * thread(void * rider) {
   int finished = 0;
   Cyclist * auxCyclist;
 
-  printf("%p\n", cyclist);
 
   while (finished == 0 && cyclist->eliminated == 0) {
 
@@ -321,25 +327,25 @@ void * thread(void * rider) {
       cyclist->lastLapTime = timePast;
       pthread_mutex_unlock(&timeMutex);
 
-      if (cyclist->lap <= 2*totalCyclists) {
+      if (cyclist->lap <= 2*totalCyclists+1) {
         pthread_mutex_lock(&lap);
         addCyclistToLap(laps, cyclist->id, cyclist->lap);
         pthread_mutex_unlock(&lap);
       }
-      else 
-        sleep(10);
-      printf("%d %d\n", cyclist->id, cyclist->lap);
+
       cross = 1;
     }
 
     pthread_mutex_lock(&numCyclistsMutex);
     if (cyclist->position == 0 && cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
-      if (rand() % 100 < 5) {
+      if (rand() % 100 < 0) {
         pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
         printf("O ciclista%d quebrou na volta: %d\n", cyclist->id, cyclist->lap);
+        printTrack();
         cyclist->broke = 1;
         numCyclists--;
         track[cyclist->position].lane[cyclist->lane].spot = NULL;
+        printTrack();
         arrive[cyclist->id] = 1;
         pthread_mutex_unlock(&mutex[cyclist->position][cyclist->lane]);
         pthread_mutex_unlock(&numCyclistsMutex);
@@ -371,7 +377,6 @@ void printTrack() {
     }
     printf("\n");
   }
-    printf("volta : %d\n",lapGlobal);
   printf("\n\n\n");
 
 }
@@ -402,7 +407,6 @@ int randomizeId(int * ids, int numCyclists) {
   else 
     ids[id] = 1;
 
-  // printf("%d\n", id);
    
   return id;
 }

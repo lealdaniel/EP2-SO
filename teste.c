@@ -1,7 +1,10 @@
 #include "list.h"
 
+List ** laps;
+
+
 int main() {
-	initLaps(5);
+	laps = initLaps(laps, 5);
 
   Cyclist **cyclists = malloc(5 * sizeof(Cyclist));
 	for (int j = 0; j < 5; j++) {
@@ -18,18 +21,20 @@ int main() {
 	}
 
 	cyclists[0]->lastLapTime = 5;
-	addCyclistToLap(0, 0);
+	addCyclistToLap(laps, 0, 1);
 	cyclists[1]->lastLapTime = 5;
-	addCyclistToLap(1, 0);
-	cyclists[2]->lastLapTime = 5;
-	addCyclistToLap(2, 0);
-	cyclists[3]->lastLapTime = 5;
-	addCyclistToLap(3, 0);
-	cyclists[4]->lastLapTime = 5;
-	addCyclistToLap(4, 0);
-	int elim = eliminateLast(0, cyclists);
+	addCyclistToLap(laps, 1, 1);
+	cyclists[2]->lastLapTime = 6;
+	addCyclistToLap(laps, 2, 1);
+	cyclists[3]->lastLapTime = 6;
+	cyclists[3]->broke = 1;
+	addCyclistToLap(laps, 3, 1);
+	cyclists[4]->lastLapTime = 7;
+	cyclists[4]->broke = 1;
+	addCyclistToLap(laps, 4, 1);
+	int elim = eliminateLast(laps, 1, cyclists);
 	printf("eliminei o %d\n", elim);
-	printLaps(5);
+	printLaps(laps, 5);
 
 	return 0;
 }

@@ -2,6 +2,9 @@
 #define LIST_H
 
 #include "cyclist.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 typedef struct Node {
   int id;
