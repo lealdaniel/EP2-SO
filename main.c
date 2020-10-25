@@ -34,7 +34,7 @@ int main(int argc, char ** argv) {
     exit(1);
   }
 
-  printf("Deseja debugar? Sim: 1. Nao: 0\n");
+  printf("Deseja debugar? Sim: 1. Nao: 0 ");
   scanf("%d", &debug);
 
   srand(time(NULL));
@@ -95,27 +95,23 @@ int main(int argc, char ** argv) {
         arrivedCyclist = 0;
       }
     }
-    printf("\n");
 
     if (arrivedCyclist) {
       if (checkLapped(laps, numCyclists, lapGlobal + 1)) {
         eliminated = 0;
         lapGlobal += 1;
+        printf("\nTODOS OS CICLISTAS TERMINARAM A VOLTA: %d\n", lapGlobal);
+        outputLaps(cyclists, totalCyclists);
+        printf("\n");
       }
     
-      printf("lapglobal: %d\n", lapGlobal);
       // usleep(10000);
     
       if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
         int picked = eliminateLast(laps, lapGlobal, cyclists);
         if (picked != -1) {
-          printTrack();
-          printf("PICKED CARALHO: %d\n", picked);
           cyclists[picked]->eliminated = 1;
-          printf("lap: %d, lapGlobal: %d\n", cyclists[picked]->lap, lapGlobal);
           track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
-          printTrack();
-
           eliminated = 1;
           numCyclists--;
         }
@@ -132,8 +128,6 @@ int main(int argc, char ** argv) {
           pthread_mutex_unlock(&barrier[cyclists[i]->id]);
         }
       }
-
-
     }
 
     pthread_mutex_lock(&timeMutex);
@@ -239,7 +233,7 @@ void * thread(void * rider) {
     if (track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot != NULL) {
       if (track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot->actualSpeed == 30 && cyclist->drawnSpeed == 60) {
         int overTake = 0;
-        if (cyclist->lane + 1 < 10) { 
+        if (cyclist->lane + 1 < 10) {   
           for (int i = cyclist->lane + 1; i < 10 && !overTake; i++) {
             pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][i]);
             pthread_mutex_lock(&mutex[cyclist->position][i]);
@@ -348,11 +342,9 @@ void * thread(void * rider) {
       if (rand() % 100 < 5) {
         pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
         printf("O ciclista%d quebrou na volta: %d\n", cyclist->id, cyclist->lap);
-        printTrack();
         cyclist->broke = 1;
         numCyclists--;
         track[cyclist->position].lane[cyclist->lane].spot = NULL;
-        printTrack();
         arrive[cyclist->id] = 1;
         pthread_mutex_unlock(&mutex[cyclist->position][cyclist->lane]);
         pthread_mutex_unlock(&numCyclistsMutex);
