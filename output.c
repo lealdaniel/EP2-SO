@@ -40,7 +40,7 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
         notBroke[j + 1] = aux;
       }
       else if (notBroke[j]->lap == notBroke[j + 1]->lap) {
-        if (notBroke[j]->lastLapTime < notBroke[j + 1]->lastLapTime) {
+        if (notBroke[j]->lastLapTime > notBroke[j + 1]->lastLapTime) {
           aux = notBroke[j];
           notBroke[j] = notBroke[j + 1];
           notBroke[j + 1] = aux;
