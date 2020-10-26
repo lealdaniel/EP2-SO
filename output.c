@@ -62,3 +62,9 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
   free(broke);
   free(notBroke);
 }
+
+void recordToFile(int timePast, int memory, char * filename) {
+  FILE * output = fopen(filename, "w");
+  fprintf(output, "%d %d\n", timePast, memory);
+  fclose(output);
+}
