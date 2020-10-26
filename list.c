@@ -1,4 +1,5 @@
 #include "list.h"
+#include "unistd.h"
 
 
 List ** initLaps(List ** laps, int numCyclists) {
@@ -32,11 +33,24 @@ void addCyclistToLap(List ** laps, int id, int lap) {
 }
 
 int checkLapped(List ** laps, int numCyclists, int lap) {
-  if (laps[lap]->numLapped >= numCyclists) {
-    return 1;
-  }
+  // if (laps[lap]->numLapped >= numCyclists) {
+  //   return 1;
+  // }
     
+  // return 0;
+  Node * aux = laps[lap]->last;
+  int lapped = 0;
+  while (aux != NULL) {
+    lapped++;
+    aux = aux->next;
+  }
+
+  if (lapped == numCyclists)
+    return 1;
+
   return 0;
+
+
 }
 
 void freeLaps(List ** laps, int numCyclists) {
@@ -59,7 +73,7 @@ void printLaps(List ** laps, int numCyclists) {
   
   for (int i = 1; i < (2 * numCyclists + 1); i++) {
     aux = laps[i]->last;
-    printf("volta: %d\n", i+1);
+    printf("volta: %d\n", i);
     while (aux != NULL) {
       printf("id: %d\n", aux->id);
       aux = aux->next;

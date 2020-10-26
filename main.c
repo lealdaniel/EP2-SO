@@ -28,6 +28,7 @@ int main(int argc, char ** argv) {
   int ids[4*MAX_SIZE] = {0};
   int eliminated = 0;
   int debug = 0;
+  int expectedCyclists;
   pthread_t tid[MAX_SIZE];
 
   if (argc < 3) {
@@ -45,6 +46,7 @@ int main(int argc, char ** argv) {
   laps = initLaps(laps, numCyclists);
   pthread_mutex_init(&lap, NULL);
   pthread_mutex_init(&numCyclistsMutex, NULL);
+  expectedCyclists = numCyclists;
 
   for (int i = 0; i < distance; i++) {
     for (int j = 0; j < 10; j++) {
@@ -81,12 +83,7 @@ int main(int argc, char ** argv) {
     }
 
   int finished = 0;
-  while (finished == 0) {
-
-    // pthread_mutex_lock(&numCyclistsMutex);
-    if (numCyclists == 1)
-      finished = 1;
-    // pthread_mutex_unlock(&numCyclistsMutex);
+  while (numCyclists > 1) {
 
     arrivedCyclist = 1;
     for (int i = 0; i < totalCyclists && arrivedCyclist; i++) {
@@ -100,13 +97,19 @@ int main(int argc, char ** argv) {
     else    
       timePast += 20;
 
+    int aux = expectedCyclists;
     if (arrivedCyclist) {
-      if (checkLapped(laps, numCyclists, lapGlobal + 1)) {
+      for (int i = 0; i < totalCyclists; i++)
+        if (cyclists[i]->lap < lapGlobal + 1 && cyclists[i]->broke)
+          aux--;
+
+      if (checkLapped(laps, aux, lapGlobal + 1)) {
         eliminated = 0;
         lapGlobal += 1;
         printf("\nTODOS OS CICLISTAS TERMINARAM A VOLTA: %d\n", lapGlobal);
         outputLaps(cyclists, totalCyclists);
         printf("\n");
+        sleep(2);
       }
     
       // usleep(10000);
@@ -117,6 +120,7 @@ int main(int argc, char ** argv) {
           cyclists[picked]->eliminated = 1;
           track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
           eliminated = 1;
+          expectedCyclists--;
           numCyclists--;
         }
       }
@@ -163,8 +167,6 @@ int main(int argc, char ** argv) {
     for (int j = 0; j < 10; j++) {
       pthread_mutex_destroy(&mutex[i][j]);
     }
-
-
 
   return 0;
 }
