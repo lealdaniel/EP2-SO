@@ -3,7 +3,7 @@
 ep2: main.o output.o list.o
 	gcc -g -Wall main.o list.o output.o -o ep2 -lpthread
 
-main.o: main.c 
+main.o: main.c track.h cyclist.h
 	gcc -g -Wall -c main.c -lpthread
 
 output.o: output.c output.h

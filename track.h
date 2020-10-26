@@ -4,7 +4,7 @@
 #include "cyclist.h"
 
 #define MAX 10
-#define MAX_SIZE 1000
+#define MAX_SIZE 5000
 
 
 typedef struct Lane {

@@ -3,6 +3,7 @@
 #include "output.h"
 #include "unistd.h"
 #include "list.h"
+#include "string.h"
 
 pthread_mutex_t mutex[MAX_SIZE][MAX];
 pthread_mutex_t lap;
@@ -11,13 +12,14 @@ pthread_mutex_t barrier[MAX_SIZE];
 int arrive[MAX_SIZE] = { 0 };
 int distance, numCyclists;
 int lapGlobal = 0;
-int timePast = 0;
+unsigned int timePast = 0;
 int totalCyclists = 0;
 List ** laps;
 
 void changePlace(Cyclist * cyclist, int desiredPosition, int desiredLane);
 void * thread(void * rider);
 int randomizeId(int * ids, int numCyclists);
+int getMemory();
 void printTrack();
 
 int main(int argc, char ** argv) {
@@ -43,7 +45,6 @@ int main(int argc, char ** argv) {
   laps = initLaps(laps, numCyclists);
   pthread_mutex_init(&lap, NULL);
   pthread_mutex_init(&numCyclistsMutex, NULL);
-
 
   for (int i = 0; i < distance; i++) {
     for (int j = 0; j < 10; j++) {
@@ -73,7 +74,7 @@ int main(int argc, char ** argv) {
     }
   }
 
-  for(int i = 0; i < totalCyclists; i++)
+  for (int i = 0; i < totalCyclists; i++)
     if (pthread_create(&tid[i], NULL, thread, cyclists[i])) {
       printf("Erro ao tentar criar as threads \n");
       exit(1);
@@ -134,6 +135,8 @@ int main(int argc, char ** argv) {
     }    
   }
 
+
+  int memory = getMemory();
 
   rankCyclists(cyclists, totalCyclists);
 
@@ -302,8 +305,6 @@ void * thread(void * rider) {
 
     pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
     if (t >= 60 && track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot == NULL) {
-
-      
       pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][cyclist->lane]);
       if (track[(cyclist->position + 1) % distance].lane[cyclist->lane].spot == NULL) {
         previousPosition = currentPosition;
@@ -412,4 +413,35 @@ int randomizeId(int * ids, int numCyclists) {
 
    
   return id;
+}
+
+
+int getMemory() {
+  FILE * output;
+  char buffer[MAX_SIZE];
+  char * memory;
+  unsigned int total = 0;
+  int i;
+
+  output = fopen("/proc/self/statm", "r");
+
+  fread(buffer, MAX_SIZE, 1, output);
+  printf("%s", buffer);
+
+
+  memory = strtok(buffer, " ");
+  total = atoi(memory);
+
+  for (int i = 0; i < 4; i++)
+    memory = strtok(buffer, " ");
+
+  printf("%s\n", memory);
+  memory = strtok(buffer, " ");
+  total += atoi(memory);
+  printf("total: %d", total);
+
+  exit(1);
+  fclose(output);
+
+  return total;
 }
