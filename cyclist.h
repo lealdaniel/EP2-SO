@@ -10,7 +10,7 @@ typedef struct Cyclist {
   int broke;
   int eliminated;
   int lap;
-  int lastLapTime;
+  unsigned long int lastLapTime;
   
 } Cyclist;
 

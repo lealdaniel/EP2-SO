@@ -5,14 +5,14 @@
 #include "list.h"
 #include "string.h"
 
-pthread_mutex_t mutex[MAX_SIZE][MAX];
+pthread_mutex_t mutex[MAX_TRACK][LANES];
 pthread_mutex_t lap;
 pthread_mutex_t numCyclistsMutex;
-pthread_mutex_t barrier[MAX_SIZE];
-int arrive[MAX_SIZE] = { 0 };
+pthread_mutex_t barrier[MAX_CYCLISTS];
+int arrive[MAX_CYCLISTS] = { 0 };
 int distance, numCyclists;
 int lapGlobal = 0;
-unsigned long timePast = 0;
+unsigned long int timePast = 0;
 int totalCyclists = 0;
 List ** laps;
 
@@ -25,11 +25,11 @@ void printTrack();
 int main(int argc, char ** argv) {
   int arrivedCyclist;
   int id;
-  int ids[4*MAX_SIZE] = {0};
+  int ids[MAX_CYCLISTS] = {0};
   int eliminated = 0;
   int debug = 0;
   int expectedCyclists;
-  pthread_t tid[MAX_SIZE];
+  pthread_t tid[MAX_CYCLISTS];
 
   if (argc < 3) {
     printf("Argumentos 'd' e 'n' faltando");
@@ -93,9 +93,9 @@ int main(int argc, char ** argv) {
     }
 
     if (numCyclists > 2)
-      timePast += 60;
+      timePast += 6;
     else    
-      timePast += 20;
+      timePast += 2;
 
     int aux = expectedCyclists;
     if (arrivedCyclist) {
@@ -115,6 +115,8 @@ int main(int argc, char ** argv) {
       if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
         int picked = eliminateLast(laps, lapGlobal, cyclists);
         if (picked != -1) {
+          printf("PICKED: %d", picked);
+          sleep(2);
           cyclists[picked]->eliminated = 1;
           track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
           eliminated = 1;
@@ -137,10 +139,6 @@ int main(int argc, char ** argv) {
         }
       }
     }  
-
-    
-
-  
   }
 
 
@@ -429,13 +427,13 @@ int randomizeId(int * ids, int numCyclists) {
 
 int getMemory() {
   FILE * output;
-  char buffer[MAX_SIZE];
+  char buffer[1000];
   char * memory;
   unsigned int total = 0;
 
   output = fopen("/proc/self/statm", "r");
 
-  fread(buffer, MAX_SIZE, 1, output);
+  fread(buffer, 1000, 1, output);
 
   memory = strtok(buffer, " ");
   total = atoi(memory);

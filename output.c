@@ -50,7 +50,7 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
   }
   
   for (int i = 0; i < numNotBroke; i++) {
-    printf("#%d ciclista%d, cruzou a linha de chegada no instante %d pela ultima vez\n", i + 1, notBroke[i]->id, notBroke[i]->lastLapTime);
+    printf("#%d ciclista%d, cruzou a linha de chegada no instante %lu pela ultima vez\n", i + 1, notBroke[i]->id, notBroke[i]->lastLapTime);
   }
 
   printf("\n");

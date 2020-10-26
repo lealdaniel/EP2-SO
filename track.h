@@ -3,8 +3,9 @@
 
 #include "cyclist.h"
 
-#define MAX 10
-#define MAX_SIZE 5000
+#define LANES 10
+#define MAX_TRACK 25000
+#define MAX_CYCLISTS 1000
 
 
 typedef struct Lane {
@@ -13,10 +14,10 @@ typedef struct Lane {
 
 
 typedef struct Track {
-  Lane lane[10];
+  Lane lane[LANES];
 
 } Track;
 
-Track track[MAX_SIZE];
+Track track[MAX_TRACK];
 
 #endif
