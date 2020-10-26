@@ -83,7 +83,7 @@ int main(int argc, char ** argv) {
     }
 
   int finished = 0;
-  while (numCyclists > 1) {
+  while (!finished) {
 
     arrivedCyclist = 1;
     for (int i = 0; i < totalCyclists && arrivedCyclist; i++) {
@@ -126,6 +126,9 @@ int main(int argc, char ** argv) {
       if (debug) {
         printTrack();
       }  
+
+      if (numCyclists == 1)
+        finished = 1;
       
       for (int i = 0; i < totalCyclists; i++) {
         if (!cyclists[i]->eliminated && !cyclists[i]->broke) {
@@ -133,7 +136,11 @@ int main(int argc, char ** argv) {
           pthread_mutex_unlock(&barrier[cyclists[i]->id]);
         }
       }
-    }    
+    }  
+
+    
+
+  
   }
 
 
@@ -267,6 +274,8 @@ void * thread(void * rider) {
       cyclist->actualSpeed = cyclist->drawnSpeed;
     pthread_mutex_unlock(&mutex[lockedPos][lockedLane]);    
 
+    pthread_mutex_lock(&numCyclistsMutex);
+
     if (numCyclists > 2) {
       switch (cyclist->actualSpeed) {
         case 60:
@@ -297,6 +306,8 @@ void * thread(void * rider) {
           break;
       }
     }
+    pthread_mutex_unlock(&numCyclistsMutex);
+
 
     currentPosition = cyclist->position;
     currentLane = cyclist->lane;
