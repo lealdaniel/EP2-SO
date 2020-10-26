@@ -15,7 +15,6 @@ List ** initLaps(List ** laps, int numCyclists) {
 }
 
 void addCyclistToLap(List ** laps, int id, int lap) {
-  
   Node * aux = malloc(sizeof(Node));
   aux->id = id;
   aux->next = NULL;
@@ -33,24 +32,10 @@ void addCyclistToLap(List ** laps, int id, int lap) {
 }
 
 int checkLapped(List ** laps, int numCyclists, int lap) {
-  // if (laps[lap]->numLapped >= numCyclists) {
-  //   return 1;
-  // }
-    
-  // return 0;
-  Node * aux = laps[lap]->last;
-  int lapped = 0;
-  while (aux != NULL) {
-    lapped++;
-    aux = aux->next;
-  }
-
-  if (lapped == numCyclists)
+  if (numCyclists == laps[lap]->numLapped)
     return 1;
 
   return 0;
-
-
 }
 
 void freeLaps(List ** laps, int numCyclists) {

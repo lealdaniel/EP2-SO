@@ -12,7 +12,7 @@ pthread_mutex_t barrier[MAX_SIZE];
 int arrive[MAX_SIZE] = { 0 };
 int distance, numCyclists;
 int lapGlobal = 0;
-unsigned int timePast = 0;
+unsigned long timePast = 0;
 int totalCyclists = 0;
 List ** laps;
 
@@ -109,10 +109,8 @@ int main(int argc, char ** argv) {
         printf("\nTODOS OS CICLISTAS TERMINARAM A VOLTA: %d\n", lapGlobal);
         outputLaps(cyclists, totalCyclists);
         printf("\n");
-        sleep(2);
       }
     
-      // usleep(10000);
     
       if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
         int picked = eliminateLast(laps, lapGlobal, cyclists);
@@ -127,7 +125,6 @@ int main(int argc, char ** argv) {
 
       if (debug) {
         printTrack();
-        // printLaps(laps, totalCyclists);
       }  
       
       for (int i = 0; i < totalCyclists; i++) {
