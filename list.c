@@ -76,9 +76,10 @@ int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
   Node * aux = laps[lap]->last;
   Node * aux2;
 
-  while (aux != NULL && cyclists[aux->id]->broke) {
+  while (aux != NULL && (cyclists[aux->id]->broke || cyclists[aux->id]->eliminated)) {
+    printf("passei");
     aux = aux->next;
-  }
+  } 
 
   if (aux == NULL)
     return -1;
@@ -99,8 +100,8 @@ int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
       aux2 = aux;
       for (int i = 0; i < picked; i++)
         aux2 = aux2->next;
-
-      if (!cyclists[aux->id]->broke)
+      printf("%d\n", picked);
+      if (!cyclists[aux->id]->broke && !cyclists[aux->id]->eliminated)
         valid = 1;
     }
 

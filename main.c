@@ -352,7 +352,7 @@ void * thread(void * rider) {
 
     pthread_mutex_lock(&numCyclistsMutex);
     if (cyclist->position == 0 && cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
-      if (rand() % 100 < 0) {
+      if (rand() % 100 < 5) {
         pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
         printf("O ciclista%d quebrou na volta: %d\n", cyclist->id, cyclist->lap);
         cyclist->broke = 1;

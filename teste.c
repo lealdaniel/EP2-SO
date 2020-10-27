@@ -25,14 +25,25 @@ int main() {
 	cyclists[1]->lastLapTime = 5;
 	addCyclistToLap(laps, 1, 1);
 	cyclists[2]->lastLapTime = 6;
-	addCyclistToLap(laps, 2, 1);
-	cyclists[3]->lastLapTime = 6;
-	cyclists[3]->broke = 1;
 	addCyclistToLap(laps, 3, 1);
-	cyclists[4]->lastLapTime = 7;
+	addCyclistToLap(laps, 2, 1);
+	cyclists[3]->lastLapTime = 2;
+	addCyclistToLap(laps, 4, 2);
+	addCyclistToLap(laps, 3, 2);
+	addCyclistToLap(laps, 2, 2);
+	addCyclistToLap(laps, 0, 2);
+	cyclists[3]->broke = 1;
 	cyclists[4]->broke = 1;
-	addCyclistToLap(laps, 4, 1);
+	cyclists[2]->broke = 1;
+	cyclists[0]->eliminated = 1;
+	// printLaps(laps, 5);
+	cyclists[4]->lastLapTime = 3;
+	// cyclists[4]->broke = 1;
+
 	int elim = eliminateLast(laps, 1, cyclists);
+	cyclists[2]->eliminated = 1;
+	printf("eliminei o %d\n", elim);
+	elim = eliminateLast(laps, 2, cyclists);
 	printf("eliminei o %d\n", elim);
 	printLaps(laps, 5);
 
