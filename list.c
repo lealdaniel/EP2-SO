@@ -18,7 +18,7 @@ void addCyclistToLap(List ** laps, int id, int lap) {
   Node * aux = malloc(sizeof(Node));
   aux->id = id;
   aux->next = NULL;
-  laps[lap]->numLapped += 1;
+  laps[lap]->numLapped += 1; 
 
   if (laps[lap]->first == NULL) {    
     laps[lap]->first = aux;
@@ -32,6 +32,9 @@ void addCyclistToLap(List ** laps, int id, int lap) {
 }
 
 int checkLapped(List ** laps, int numCyclists, int lap) {
+  printf("numLapped %d lap %d\n", laps[lap]->numLapped, lap);
+  if (lap > 1)
+  printf("numLapped %d lap %d\n", laps[lap-1]->numLapped, lap-1);
   if (numCyclists == laps[lap]->numLapped)
     return 1;
 

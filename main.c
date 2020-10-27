@@ -4,6 +4,7 @@
 #include "unistd.h"
 #include "list.h"
 #include "string.h"
+#include "math.h"
 
 pthread_mutex_t mutex[MAX_TRACK][LANES];
 pthread_mutex_t lap;
@@ -27,17 +28,17 @@ int main(int argc, char ** argv) {
   int id;
   int ids[MAX_CYCLISTS] = {0};
   int eliminated = 0;
-  int debug = 0;
+  int debug;
   int expectedCyclists;
   pthread_t tid[MAX_CYCLISTS];
 
-  if (argc < 3) {
+  if (argc < 4) {
     printf("Argumentos 'd' e 'n' faltando");
     exit(1);
   }
-
-  printf("Deseja debugar? Sim: 1. Nao: 0 ");
-  scanf("%d", &debug);
+  debug = atoi(argv[3]);
+  // printf("Deseja debugar? Sim: 1. Nao: 0 ");
+  // scanf("%d", &debug);
 
   srand(time(NULL));
   distance = atoi(argv[1]);
@@ -85,6 +86,8 @@ int main(int argc, char ** argv) {
   int finished = 0;
   while (!finished) {
 
+    // printf("to travado\n");
+
     arrivedCyclist = 1;
     for (int i = 0; i < totalCyclists && arrivedCyclist; i++) {
       if (!arrive[i] && !cyclists[i]->eliminated && !cyclists[i]->broke)  {
@@ -96,27 +99,29 @@ int main(int argc, char ** argv) {
       timePast += 6;
     else    
       timePast += 2;
-
     int aux = expectedCyclists;
     if (arrivedCyclist) {
       for (int i = 0; i < totalCyclists; i++)
-        if (cyclists[i]->lap < lapGlobal + 1 && cyclists[i]->broke)
+        if (cyclists[i]->broke && cyclists[i]->lap < lapGlobal + 1){
           aux--;
+        }
 
+      // printf("aux : %d\n", aux);
       if (checkLapped(laps, aux, lapGlobal + 1)) {
         eliminated = 0;
         lapGlobal += 1;
         printf("\nTODOS OS CICLISTAS TERMINARAM A VOLTA: %d\n", lapGlobal);
-        outputLaps(cyclists, totalCyclists);
-        printf("\n");
       }
-    
+      outputLaps(cyclists, totalCyclists);
+      // printLaps(laps, totalCyclists);
     
       if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
         int picked = eliminateLast(laps, lapGlobal, cyclists);
         if (picked != -1) {
-          printf("PICKED: %d", picked);
-          sleep(2);
+          if (cyclists[picked]->lap >= lapGlobal + 1) {
+            for (int i = cyclists[picked]->lap; i > lapGlobal; i--)
+              laps[i]->numLapped--;
+          }
           cyclists[picked]->eliminated = 1;
           track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
           eliminated = 1;
@@ -131,7 +136,6 @@ int main(int argc, char ** argv) {
 
       if (numCyclists == 1)
         finished = 1;
-      
       for (int i = 0; i < totalCyclists; i++) {
         if (!cyclists[i]->eliminated && !cyclists[i]->broke) {
           arrive[cyclists[i]->id] = 0;
@@ -142,7 +146,7 @@ int main(int argc, char ** argv) {
   }
 
 
-  int memory = getMemory();
+  // int memory = getMemory();
   // recordToFile(memory, timePast, "teste.out");
 
   rankCyclists(cyclists, totalCyclists);
@@ -186,12 +190,9 @@ void * thread(void * rider) {
   while (finished == 0 && cyclist->eliminated == 0 && cyclist->broke == 0) {
     lefted = 0;
 
-    pthread_mutex_lock(&numCyclistsMutex);
-    if (numCyclists == 1)
-      finished = 1;
-    pthread_mutex_unlock(&numCyclistsMutex);
 
     arrive[cyclist->id] = 1;
+    // printf("cheguei %d\n", cyclist->id);
     pthread_mutex_lock(&barrier[cyclist->id]);
 
     if (cyclist->lap != 0 && cyclist->lap % 2 == 0 && cross) {
@@ -351,7 +352,7 @@ void * thread(void * rider) {
 
     pthread_mutex_lock(&numCyclistsMutex);
     if (cyclist->position == 0 && cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
-      if (rand() % 100 < 5) {
+      if (rand() % 100 < 0) {
         pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
         printf("O ciclista%d quebrou na volta: %d\n", cyclist->id, cyclist->lap);
         cyclist->broke = 1;
@@ -361,6 +362,11 @@ void * thread(void * rider) {
         pthread_mutex_unlock(&mutex[cyclist->position][cyclist->lane]);
       }
     }
+    pthread_mutex_unlock(&numCyclistsMutex);
+
+    pthread_mutex_lock(&numCyclistsMutex);
+    if (numCyclists == 1)
+      finished = 1;
     pthread_mutex_unlock(&numCyclistsMutex);
   }
 
