@@ -3,7 +3,7 @@
 void outputLaps(Cyclist ** cyclists, int numCyclists) {
   for (int i = 0; i < numCyclists; i++) {
     if (!cyclists[i]->eliminated && !cyclists[i]->broke)
-      printf("Ciclista%d está na volta %d, na posição %d\n", cyclists[i]->id, cyclists[i]->lap, cyclists[i]->position);
+      printf("Ciclista%d está na volta %d, na posição %d, na lane %d\n", cyclists[i]->id, cyclists[i]->lap, cyclists[i]->position, cyclists[i]->lane);
   }
 }
 
@@ -40,7 +40,7 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
         notBroke[j + 1] = aux;
       }
       else if (notBroke[j]->lap == notBroke[j + 1]->lap) {
-        if (notBroke[j]->lastLapTime > notBroke[j + 1]->lastLapTime) {
+        if (notBroke[j]->lastLapTimems > notBroke[j + 1]->lastLapTimems && notBroke[j]->lastLapTimesecs >= notBroke[j + 1]->lastLapTimesecs) {
           aux = notBroke[j];
           notBroke[j] = notBroke[j + 1];
           notBroke[j + 1] = aux;
@@ -50,7 +50,8 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
   }
   
   for (int i = 0; i < numNotBroke; i++) {
-    printf("#%d ciclista%d, cruzou a linha de chegada no instante %lu pela ultima vez\n", i + 1, notBroke[i]->id, notBroke[i]->lastLapTime);
+    printf("#%d ciclista%d, cruzou a linha de chegada no instante %lu:%lu pela ultima vez\n", i + 1, notBroke[i]->id, 
+        notBroke[i]->lastLapTimesecs, notBroke[i]->lastLapTimems);
   }
 
   printf("\n");
@@ -63,8 +64,9 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
   free(notBroke);
 }
 
-void recordToFile(int timePast, int memory, char * filename) {
+void recordToFile(int memory, unsigned int timePastsecs, unsigned int timePastms, char * filename) {
   FILE * output = fopen(filename, "w");
-  fprintf(output, "%d %d\n", timePast, memory);
+  printf("oi\n");
+  fprintf(output, "%d %d:%d\n", memory, timePastsecs, timePastms);
   fclose(output);
 }

@@ -7,6 +7,6 @@
 
 void outputLaps(Cyclist ** cyclists, int numCyclists);
 void rankCyclists(Cyclist ** cyclists, int numCyclists);
-void recordToFile(int memory, int timePast, char * filename);
+void recordToFile(int memory, unsigned int timePastsecs, unsigned int timePastms, char * filename);
 
 #endif

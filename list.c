@@ -72,24 +72,24 @@ void printLaps(List ** laps, int numCyclists) {
 int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
   int count = 0;
   int valid = 0;
-  int lastTime;
+  int lastTimesecs, lastTimems;
   Node * aux = laps[lap]->last;
   Node * aux2;
 
   while (aux != NULL && (cyclists[aux->id]->broke || cyclists[aux->id]->eliminated)) {
-    printf("passei");
     aux = aux->next;
   } 
 
   if (aux == NULL)
     return -1;
 
-  lastTime = cyclists[aux->id]->lastLapTime;
+  lastTimesecs = cyclists[aux->id]->lastLapTimesecs;
+  lastTimems = cyclists[aux->id]->lastLapTimems;
 
   srand(time(NULL));
 
   aux2 = aux;
-  while(aux2 != NULL && cyclists[aux2->id]->lastLapTime == lastTime) {
+  while(aux2 != NULL && cyclists[aux2->id]->lastLapTimesecs == lastTimesecs && lastTimems == cyclists[aux2->id]->lastLapTimems) {
     count++;
     aux2 = aux2->next;
   }
@@ -100,9 +100,9 @@ int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
       aux2 = aux;
       for (int i = 0; i < picked; i++)
         aux2 = aux2->next;
-      printf("%d\n", picked);
       if (!cyclists[aux->id]->broke && !cyclists[aux->id]->eliminated)
         valid = 1;
+      // printf("to preso");
     }
 
     return aux2->id;
