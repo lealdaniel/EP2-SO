@@ -48,7 +48,6 @@ int main(int argc, char ** argv) {
   laps = initLaps(laps, numCyclists);
   pthread_mutex_init(&lap, NULL);
   pthread_mutex_init(&numCyclistsMutex, NULL);
-  expectedCyclists = numCyclists;
 
   for (int i = 0; i < distance; i++) {
     for (int j = 0; j < 10; j++) {
@@ -97,7 +96,6 @@ int main(int argc, char ** argv) {
       }
     }
 
-    int aux = expectedCyclists;
     if (arrivedCyclist) {
       if (numCyclists > 2)
         timePastms += 60;
@@ -121,7 +119,7 @@ int main(int argc, char ** argv) {
     
       if (lapGlobal != 0 && lapGlobal % 2 == 0 && !eliminated) {
         int picked = eliminateLast(laps, lapGlobal, cyclists);
-        printf("PICKED : %d\n", picked);
+        // printf("PICKED : %d\n", picked);
         if (picked != -1) {
           cyclists[picked]->eliminated = 1;
           track[cyclists[picked]->position].lane[cyclists[picked]->lane].spot = NULL;
@@ -153,7 +151,7 @@ int main(int argc, char ** argv) {
   recordToFile(memory, timePastsecs, timePastms, "teste.out");
 
   rankCyclists(cyclists, totalCyclists);
-
+  printLaps(laps, totalCyclists);
   for (int i = 0; i < totalCyclists; i++) {
 
     pthread_mutex_unlock(&barrier[i]);
@@ -186,7 +184,7 @@ void * thread(void * rider) {
   int currentPosition = -1, currentLane = -1, desiredPosition = -1, desiredLane = -1, previousPosition = -1;
   int cross = 0;
   int finished = 0;
-  Cyclist * auxCyclist;
+  // Cyclist * auxCyclist;
   int lefted;
 
 
@@ -201,14 +199,14 @@ void * thread(void * rider) {
      // printf("cicliast %d to na lap %d\n", cyclist->id, cyclist->lap);
      switch (cyclist->drawnSpeed) {
         case 30:
-          if ((rand() % 100) < 60)
+          if ((rand() % 100) < 80)
             cyclist->drawnSpeed = 60;
           else
             cyclist->drawnSpeed = 30;
           break;
         
         default:
-          if ((rand() % 100) < 40)
+          if ((rand() % 100) < 20)
             cyclist->drawnSpeed = 30;
           else
             cyclist->drawnSpeed = 60;
@@ -234,6 +232,8 @@ void * thread(void * rider) {
       }
       pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
     }
+
+    // printf("TRAVEI AQUI CARAI %d\n", cyclist->id);
     pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][cyclist->lane]);   
     int lockedPos = (cyclist->position + 1) % distance; 
     int lockedLane = cyclist->lane;
@@ -243,7 +243,7 @@ void * thread(void * rider) {
         if (cyclist->lane + 1 < 10) {   
           for (int i = cyclist->lane + 1; i < 10 && !overTake; i++) {
             pthread_mutex_lock(&mutex[(cyclist->position + 1) % distance][i]);
-            pthread_mutex_lock(&mutex[cyclist->position][i]);
+            // pthread_mutex_lock(&mutex[cyclist->position][i]);
             currentLane = cyclist->lane;
             currentPosition = cyclist->position;
             desiredPosition = (cyclist->position + 1) % distance;
@@ -260,7 +260,7 @@ void * thread(void * rider) {
               overTake = 1;
             }
             pthread_mutex_unlock(&mutex[desiredPosition][desiredLane]);
-            pthread_mutex_unlock(&mutex[currentPosition][i]);
+            // pthread_mutex_unlock(&mutex[currentPosition][i]);
           }
         }
 
@@ -272,7 +272,8 @@ void * thread(void * rider) {
     else
       cyclist->actualSpeed = cyclist->drawnSpeed;
     pthread_mutex_unlock(&mutex[lockedPos][lockedLane]);    
-    // // printf("sai %d\n\n", cyclist->id);
+    // printf("zuera %d\n", cyclist->id);
+  // // printf("sai %d\n\n", cyclist->id);
     pthread_mutex_lock(&numCyclistsMutex);
 
     if (numCyclists > 2) {
@@ -382,7 +383,7 @@ void * thread(void * rider) {
   }
 
   if (cyclist->broke){
-    printf("travei todo mundo carai\n");
+    // printf("travei todo mundo carai\n");
     arrive[cyclist->id] = 1;
     pthread_cancel(pthread_self());
   }

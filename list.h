@@ -12,7 +12,6 @@ typedef struct Node {
 } Node;
 
 typedef struct List {
-  int numLapped;
   Node * first;
   Node * last;
 } List;

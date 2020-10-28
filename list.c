@@ -9,7 +9,6 @@ List ** initLaps(List ** laps, int numCyclists) {
     laps[i] = (List*) malloc(sizeof(List));
     laps[i]->first = NULL;
     laps[i]->last = NULL;
-    laps[i]->numLapped = 0;
   }
   return laps;
 }
@@ -18,7 +17,6 @@ void addCyclistToLap(List ** laps, int id, int lap) {
   Node * aux = malloc(sizeof(Node));
   aux->id = id;
   aux->next = NULL;
-  laps[lap]->numLapped += 1; 
 
   if (laps[lap]->first == NULL) {    
     laps[lap]->first = aux;
@@ -29,16 +27,6 @@ void addCyclistToLap(List ** laps, int id, int lap) {
     aux->next = laps[lap]->last;
     laps[lap]->last = aux;
   }
-}
-
-int checkLapped(List ** laps, int numCyclists, int lap) {
-  // printf("numLapped %d lap %d\n", laps[lap]->numLapped, lap);
-  // if (lap > 1)
-  // printf("numLapped %d lap %d\n", laps[lap-1]->numLapped, lap-1);
-  if (numCyclists == laps[lap]->numLapped)
-    return 1;
-
-  return 0;
 }
 
 void freeLaps(List ** laps, int numCyclists) {
