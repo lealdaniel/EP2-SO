@@ -31,9 +31,10 @@ int main(int argc, char ** argv) {
   int eliminated = 0;
   int debug;
   int expectedCyclists;
+  char * filename;
   pthread_t tid[MAX_CYCLISTS];
 
-  if (argc < 4) {
+  if (argc < 5) {
     printf("Argumentos 'd' e 'n' faltando\n");
     exit(1);
   }
@@ -44,6 +45,7 @@ int main(int argc, char ** argv) {
   srand(time(NULL));
   distance = atoi(argv[1]);
   numCyclists = atoi(argv[2]);
+  filename = argv[4];
   Cyclist **cyclists = malloc(numCyclists * sizeof(Cyclist));
   laps = initLaps(laps, numCyclists);
   pthread_mutex_init(&lap, NULL);
@@ -147,7 +149,7 @@ int main(int argc, char ** argv) {
 
 
   int memory = getMemory();
-  recordToFile(memory, timePastsecs, timePastms, "teste.out");
+  recordToFile(memory, timePastsecs, timePastms, filename);
 
   rankCyclists(cyclists, totalCyclists);
 
