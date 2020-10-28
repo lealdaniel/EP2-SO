@@ -150,8 +150,8 @@ int main(int argc, char ** argv) {
   recordToFile(memory, timePastsecs, timePastms, "teste.out");
 
   rankCyclists(cyclists, totalCyclists);
-  for (int i = 0; i < totalCyclists; i++) {
 
+  for (int i = 0; i < totalCyclists; i++) {
     pthread_mutex_unlock(&barrier[i]);
     pthread_mutex_destroy(&barrier[i]);
 
@@ -358,7 +358,7 @@ void * thread(void * rider) {
 
     pthread_mutex_lock(&numCyclistsMutex);
     if (numCyclists == 1)
-      break;
+      finished = 1;
     pthread_mutex_unlock(&numCyclistsMutex);
   }
 
