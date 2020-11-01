@@ -42,6 +42,7 @@ int main(int argc, char ** argv) {
   // printf("Deseja debugar? Sim: 1. Nao: 0 ");
   // scanf("%d", &debug);
 
+
   srand(time(NULL));
   distance = atoi(argv[1]);
   numCyclists = atoi(argv[2]);
@@ -440,11 +441,11 @@ int getMemory() {
   memory = strtok(buffer, " ");
   total = atoi(memory);
 
-  for (int i = 0; i < 4; i++)
-    memory = strtok(NULL, " ");
+  // for (int i = 0; i < 4; i++)
+  //   memory = strtok(NULL, " ");
 
-  memory = strtok(NULL, " ");
-  total += atoi(memory);
+  // memory = strtok(NULL, " ");
+  // total += atoi(memory);
 
   fclose(output);
 

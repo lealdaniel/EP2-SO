@@ -3,7 +3,7 @@
 
 for number in {1..15}
 do
-	CWD="./ep2 250 10 0 output/output1_$number"
+	CWD="\time -o time/time9_$number ./ep2 25000 1000 0 output/output9_$number"
 	echo $CWD
 	$CWD
 done
