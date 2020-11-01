@@ -3,7 +3,7 @@
 
 
 List ** initLaps(List ** laps, int numCyclists) {
-  laps = (List**) malloc((2 * numCyclists + 1) * sizeof(List*));
+  laps = (List**) malloc((2 * numCyclists) * sizeof(List*));
   
   for (int i = 1; i < 2 * numCyclists + 1; i++) {
     laps[i] = (List*) malloc(sizeof(List));
@@ -60,11 +60,12 @@ void printLaps(List ** laps, int numCyclists) {
 int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
   int count = 0;
   int valid = 0;
+  int lastLap;
   int lastTimesecs, lastTimems;
   Node * aux = laps[lap]->last;
   Node * aux2;
 
-  while (aux != NULL && (cyclists[aux->id]->broke || cyclists[aux->id]->eliminated)) {
+  while (aux != NULL && (cyclists[aux->id]->broke || cyclists[aux->id]->eliminated) && cyclists[aux->id]->lap) {
     aux = aux->next;
   } 
 
@@ -73,11 +74,13 @@ int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
 
   lastTimesecs = cyclists[aux->id]->lastLapTimesecs;
   lastTimems = cyclists[aux->id]->lastLapTimems;
+  lastLap = cyclists[aux->id]->lap;
 
   srand(time(NULL));
 
   aux2 = aux;
-  while(aux2 != NULL && cyclists[aux2->id]->lastLapTimesecs == lastTimesecs && lastTimems == cyclists[aux2->id]->lastLapTimems) {
+  while(aux2 != NULL && cyclists[aux2->id]->lap == lastLap && 
+    cyclists[aux2->id]->lastLapTimesecs == lastTimesecs && lastTimems == cyclists[aux2->id]->lastLapTimems) {
     count++;
     aux2 = aux2->next;
   }

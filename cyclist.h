@@ -9,6 +9,7 @@ typedef struct Cyclist {
   int lane;
   int broke;
   int eliminated;
+  int finished;
   int lap;
   unsigned long int lastLapTimemin;
   unsigned long int lastLapTimesecs;
