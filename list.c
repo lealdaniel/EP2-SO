@@ -5,7 +5,7 @@
 List ** initLaps(List ** laps, int numCyclists) {
   laps = (List**) malloc((2 * numCyclists) * sizeof(List*));
   
-  for (int i = 1; i < 2 * numCyclists + 1; i++) {
+  for (int i = 1; i < 2 * numCyclists; i++) {
     laps[i] = (List*) malloc(sizeof(List));
     laps[i]->first = NULL;
     laps[i]->last = NULL;
@@ -31,7 +31,7 @@ void addCyclistToLap(List ** laps, int id, int lap) {
 
 void freeLaps(List ** laps, int numCyclists) {
   Node * aux;
-  for (int i = 1; i < (2 * numCyclists + 1); i++) {
+  for (int i = 1; i < (2 * numCyclists); i++) {
     aux = laps[i]->last;
     while (aux != NULL) {
       laps[i]->last = aux->next;
@@ -47,7 +47,7 @@ void freeLaps(List ** laps, int numCyclists) {
 void printLaps(List ** laps, int numCyclists) {
   
   Node * aux;
-  for (int i = 1; i < (2 * numCyclists + 1); i++) {
+  for (int i = 1; i < (2 * numCyclists); i++) {
     aux = laps[i]->last;
     printf("volta: %d\n", i);
     while (aux != NULL) {
@@ -93,7 +93,6 @@ int eliminateLast(List ** laps, int lap, Cyclist ** cyclists) {
         aux2 = aux2->next;
       if (!cyclists[aux->id]->broke && !cyclists[aux->id]->eliminated)
         valid = 1;
-      // printf("to preso");
     }
 
     return aux2->id;

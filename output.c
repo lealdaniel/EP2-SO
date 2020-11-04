@@ -57,7 +57,7 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
   printf("\n");
 
   for (int i = 0; i < numBroke; i++) {
-    printf("O ciclista%d quebrou na volta %d\n", broke[i]->id, broke[i]->lap);
+    printf("O ciclista%d depois de completar a volta %d\n", broke[i]->id, broke[i]->lap-1);
   }
 
   free(broke);
@@ -66,7 +66,6 @@ void rankCyclists(Cyclist ** cyclists, int numCyclists) {
 
 void recordToFile(int memory, unsigned int timePastsecs, unsigned int timePastms, char * filename) {
   FILE * output = fopen(filename, "w");
-  printf("oi\n");
   fprintf(output, "%d %d:%d\n", memory, timePastsecs, timePastms);
   fclose(output);
 }

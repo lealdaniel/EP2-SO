@@ -1,5 +1,5 @@
 Daniel Oliveira Sanches Leal - 11321180
-João Felipe Lobo Pevidor - 
+João Felipe Lobo Pevidor - 11221992
 
 Para compilar:
 
@@ -7,4 +7,4 @@ make
 
 Para rodar:
 
-./ep2 {TAMNHO_DA_PISTA} {NÙMERO_DE_CICLISTAS}
+./ep2 {TAMNHO_DA_PISTA} {NÙMERO_DE_CICLISTAS} {1: opção debug ligada, 0: opção debug desligada}

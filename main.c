@@ -32,22 +32,18 @@ int main(int argc, char ** argv) {
   int ids[MAX_CYCLISTS] = {0};
   int eliminated = 0;
   int debug;
-  char * filename;
   pthread_t tid[MAX_CYCLISTS];
 
-  if (argc < 5) {
-    printf("Argumentos 'd' e 'n' faltando\n");
+  if (argc < 4) {
+    printf("Argumentos 'd' e 'n' e 'debug' faltando\n");
     exit(1);
   }
   debug = atoi(argv[3]);
-  // printf("Deseja debugar? Sim: 1. Nao: 0 ");
-  // scanf("%d", &debug);
 
 
   srand(time(NULL));
   distance = atoi(argv[1]);
   numCyclists = atoi(argv[2]);
-  filename = argv[4];
   Cyclist **cyclists = malloc(numCyclists * sizeof(Cyclist));
   laps = initLaps(laps, numCyclists);
   pthread_mutex_init(&lap, NULL);
@@ -101,6 +97,7 @@ int main(int argc, char ** argv) {
       }
     }
 
+
     if (arrivedCyclist) {
       if (numCyclists > 2)
         timePastms += 60;
@@ -120,7 +117,7 @@ int main(int argc, char ** argv) {
       if (newlap == 1){
         lapGlobal += 1;
         eliminated = 0;
-        printf("\n\nTODOS CICLISTAS COMPLETARAM A VOLTA: %d\n", lapGlobal);
+        printf("\n\nTODOS CICLISTAS COMPLETARAM A VOLTA: %d\n", lapGlobal-1);
         outputLaps(cyclists, totalCyclists);
       }
     
@@ -149,10 +146,6 @@ int main(int argc, char ** argv) {
       }
     }  
   }
-
-
-  int memory = getMemory();
-  recordToFile(memory, timePastsecs, timePastms, filename);
 
   rankCyclists(cyclists, totalCyclists);
 
@@ -338,7 +331,6 @@ void * thread(void * rider) {
         cyclist->lastLapTimesecs += 1;
         cyclist->lastLapTimems -= 1000;
       }
-      // printf("%d\n", cyclist->lap);
       pthread_mutex_lock(&total);
       if (cyclist->lap <= totalLaps) {
         pthread_mutex_lock(&lap);
@@ -362,7 +354,7 @@ void * thread(void * rider) {
     if (random == 0 && !cyclist->finished && cyclist->position == 0 && cyclist->lap != 0 && cyclist->lap % 6 == 0 && numCyclists > 5) {
       if (rand()%100  < 5) {
         pthread_mutex_lock(&mutex[cyclist->position][cyclist->lane]);
-        printf("O ciclista%d quebrou na volta: %d\n", cyclist->id, cyclist->lap);
+        printf("O ciclista%d quebrou após completar a volta: %d\n", cyclist->id, cyclist->lap-1);
         cyclist->broke = 1;
         numCyclists--;
         pthread_mutex_lock(&total);
